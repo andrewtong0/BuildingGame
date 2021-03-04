@@ -9,5 +9,8 @@
         <module name="BuildingGame" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="DeathSwap" target="15" />
+    </bytecodeTargetLevel>
   </component>
 </project>

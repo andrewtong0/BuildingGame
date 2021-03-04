@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BGReady implements CommandExecutor{
-  private List<Player> readyPlayers = new ArrayList<>();
+  private static List<Player> readyPlayers = new ArrayList<>();
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -19,14 +19,14 @@ public class BGReady implements CommandExecutor{
     Player player = (Player) sender;
     if (readyPlayers.contains(player)) {
       readyPlayers.remove(player);
-      Bukkit.broadcastMessage(ChatColor.DARK_RED + player.getName() + ChatColor.RED + " is no longer ready!");
+      Bukkit.broadcastMessage(ChatColor.WHITE + player.getName() + ChatColor.RED + " is no longer ready!");
     } else {
       readyPlayers.add(player);
-      Bukkit.broadcastMessage(ChatColor.DARK_RED + player.getName() + ChatColor.RED + " is ready!");
+      Bukkit.broadcastMessage(ChatColor.WHITE + player.getName() + ChatColor.GREEN + " is ready!");
     }
 
     return true;
   }
 
-  public List<Player> getParticipants() { return readyPlayers; }
+  public static List<Player> getParticipants() { return readyPlayers; }
 }
