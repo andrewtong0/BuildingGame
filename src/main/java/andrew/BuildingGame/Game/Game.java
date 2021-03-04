@@ -9,9 +9,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import net.minecraft.server.v1_16_R3.IChatBaseComponent;
 import net.minecraft.server.v1_16_R3.PacketPlayOutTitle;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -42,7 +40,8 @@ public class Game {
     host = BGHost.getHost();
     world = host.getWorld();
     Bukkit.broadcastMessage(((Player) host).getName() + " is the game host");
-//    createPlayArea();
+    GenerateBuildArea buildAreaGenerator = new GenerateBuildArea(participants.size(), host, settings);
+    buildAreaGenerator.generate();
 //    sendTitleMessage();
 //    sendActionBarMessage();
     createPlayerChain();
@@ -63,65 +62,6 @@ public class Game {
         Game.this.timer();
       }
     }, 1L);
-  }
-
-  private void createPlayArea() {
-    for (int i = 0; i < participants.size(); i++) {
-      generateBuildingStrip(i);
-    }
-  }
-
-  private void generateBuildingStrip(int index) {
-    Location hostLocation = host.getLocation();
-    generateBasePlatform(hostLocation, index);
-  }
-
-  private void generateBasePlatform(Location hostLocation, int index) {
-    int padding = settings.getBuildAreaPadding();
-    int width = settings.getBuildAreaWidth();
-    int length = settings.getBuildAreaLength();
-    int height = settings.getBuildAreaHeight();
-    int playerX = hostLocation.getBlockX();
-    int playerY = hostLocation.getBlockY();
-    int playerZ = hostLocation.getBlockZ();
-
-    // Generate base area
-    for (int x = 0; x < width + (padding * 2); x++) {
-      for (int z = 0; z < length + (padding * 2); z++) {
-        Block block = world.getBlockAt(playerX + x, playerY - 1, playerZ + z);
-        if (x < width + padding && x >= padding && z < length + padding && z >= padding) {
-          block.setType(settings.getBaseBlockMaterial());
-        } else { block.setType(settings.getPaddingBlockMaterial()); }
-      }
-    }
-
-    generateWall(
-            new Location(world, playerX - 1, playerY, playerZ - 1),
-            new Location(world, playerX - 1, playerY + height, playerZ + length + padding * 2)
-    );
-    generateWall(
-            new Location(world, playerX - 1, playerY, playerZ + length + padding * 2),
-            new Location(world, playerX + width + padding * 2, playerY + height, playerZ + length + padding * 2)
-    );
-    generateWall(
-            new Location(world, playerX + width + padding * 2, playerY, playerZ - 1),
-            new Location(world, playerX + width + padding * 2, playerY + height, playerZ + length + padding * 2)
-    );
-    generateWall(
-            new Location(world, playerX - 1, playerY, playerZ - 1),
-            new Location(world, playerX + width + padding * 2, playerY + height, playerZ - 1)
-    );
-  }
-
-  private void generateWall(Location start, Location end) {
-    for (int x = start.getBlockX(); x <= end.getBlockX(); x++) {
-      for (int y = start.getBlockY(); y < end.getBlockY(); y++) {
-        for (int z = start.getBlockZ(); z <= end.getBlockZ(); z++) {
-          Block block = world.getBlockAt(x, y, z);
-          block.setType(settings.getWallsBlockMaterial());
-        }
-      }
-    }
   }
 
   private void sendTitleMessage() {
