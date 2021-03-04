@@ -3,6 +3,7 @@ package andrew.BuildingGame.Game;
 import andrew.BuildingGame.Commands.BGHost;
 import andrew.BuildingGame.Commands.BGPrompt;
 import andrew.BuildingGame.Main;
+import andrew.BuildingGame.Util;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -24,8 +25,8 @@ public class Game {
   Boolean devMode;
   Player host;
   World world;
-  List<Player> participants;
   GameSettings settings;
+  List<Player> participants;
   HashMap<Player, Player> playerChain;
   HashMap<Player, String> playerPrompts;
 
@@ -57,24 +58,12 @@ public class Game {
       public void run() {
         for (Player p : participants) {
           String playerPrompt = playerPrompts.get(p);
-          sendActionBarMessage(p, ChatColor.YELLOW + "" + ChatColor.BOLD + "Your prompt is: " + ChatColor.WHITE + "" + ChatColor.BOLD + "" + playerPrompt);
+          Util.sendActionBarMessage(p, ChatColor.YELLOW + "" + ChatColor.BOLD +
+                  "Your prompt is: " + ChatColor.WHITE + "" + ChatColor.BOLD + "" + playerPrompt);
         }
         Game.this.timer();
       }
     }, 1L);
-  }
-
-  private void sendTitleMessage() {
-    for (Player player : participants) {
-      IChatBaseComponent chatTitle = IChatBaseComponent.ChatSerializer.a((String)("{\"text\": \"" + "TEST TITLE" + "\"}"));
-      PacketPlayOutTitle p = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.TITLE, chatTitle);
-      ((CraftPlayer) player).getHandle().playerConnection.sendPacket(p);
-    }
-  }
-
-  private void sendActionBarMessage(Player player, String message) {
-    TextComponent prompt = new TextComponent(message);
-    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, prompt);
   }
 
   private boolean verifyGamePrerequisites() {
@@ -85,6 +74,7 @@ public class Game {
     return true;
   }
 
+  // Creates cycle including all players randomly to distribute prompts
   private void createPlayerChain() {
     int numInChain = 1;
     Random rand = new Random();
@@ -98,6 +88,7 @@ public class Game {
     Player player;
     Player prevPlayer = firstPlayer;
 
+    // Iteratively generate chain
     while (numInChain <= participantsClone.size()) {
       int playerIndex = rand.nextInt(participantsClone.size());
       player = participantsClone.get(playerIndex);
@@ -110,6 +101,7 @@ public class Game {
     playerChain.put(prevPlayer, firstPlayer);
   }
 
+  // Based on the player chain, assign each player a prompt
   private void distributePrompts() {
     Random rand = new Random();
     HashMap<Player, List<String>> prompts = BGPrompt.getPrompts();
