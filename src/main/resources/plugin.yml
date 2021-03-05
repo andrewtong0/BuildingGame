@@ -15,3 +15,6 @@ commands:
   bgprompt:
     description: Add a prompt suggestion
     usage: /bgprompt
+  bgnext:
+    description: Teleports all players to their location for the next phase
+    usage: /bgnext

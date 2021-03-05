@@ -1,5 +1,6 @@
 package andrew.BuildingGame.Game;
 
+import andrew.BuildingGame.Util;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -23,16 +24,13 @@ public class GenerateBuildArea {
   }
 
   private void generateBuildingStrip(int index) {
-    int numCellsPerStrip = numPlayers > 4 ? numPlayers / 2 : 2;
-    int stripZOffset = settings.getBuildAreaPadding() * 2 + settings.getBuildAreaLength() + 3;
-    for (int i = 0; i < numCellsPerStrip; i++) {
-      int stripXOffset = settings.getBuildAreaPadding() * 2 + settings.getBuildAreaWidth() + 3;
+    for (int i = 0; i < Util.calculateNumBuildRounds(numPlayers); i++) {
       Location hostLocation = host.getLocation();
       Location stripLocation = new Location(
               host.getWorld(),
-              hostLocation.getBlockX() + (stripXOffset * i),
+              hostLocation.getBlockX() + (settings.getBuildAreaXOffset() * i),
               hostLocation.getBlockY(),
-              hostLocation.getBlockZ() + (stripZOffset * index)
+              hostLocation.getBlockZ() + (settings.getBuildAreaZOffset() * index)
       );
       generateBuildingCell(stripLocation);
     }

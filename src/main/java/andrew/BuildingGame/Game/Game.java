@@ -1,20 +1,19 @@
 package andrew.BuildingGame.Game;
 
-import andrew.BuildingGame.Commands.BGHost;
 import andrew.BuildingGame.Commands.BGPrompt;
 import andrew.BuildingGame.Main;
 import andrew.BuildingGame.Util;
 import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.server.v1_16_R3.IChatBaseComponent;
-import net.minecraft.server.v1_16_R3.PacketPlayOutTitle;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
+import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+import org.bukkit.scoreboard.Team;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,37 +22,64 @@ import java.util.Random;
 
 public class Game {
   Boolean devMode;
-  Player host;
-  World world;
-  GameSettings settings;
   List<Player> participants;
+  Player host;
+  GameSettings settings;
+  World world;
+  ScoreboardManager manager;
+  Scoreboard board;
+  List<Team> playerTeams;
   HashMap<Player, Player> playerChain;
   HashMap<Player, String> playerPrompts;
+  HashMap<Player, List<Location>> playerPaths;
+  BukkitScheduler scheduler;
+  BossBar timerBar;
+  int currTime;
+  int numTicks;
+  int gamePhase;
 
-  public Game(Boolean devMode, List<Player> participants, GameSettings settings) {
+  public Game(Boolean devMode) {
     this.devMode = devMode;
-    this.participants = participants;
-    this.settings= settings;
   }
 
-  public void start() {
-//    if (!verifyGamePrerequisites()) { return; }
-    host = BGHost.getHost();
+  public void start(List<Player> participants, Player host, GameSettings settings) {
+    this.participants = participants;
+    this.host = host;
+    this.settings= settings;
     world = host.getWorld();
-    Bukkit.broadcastMessage(((Player) host).getName() + " is the game host");
-    GenerateBuildArea buildAreaGenerator = new GenerateBuildArea(participants.size(), host, settings);
-    buildAreaGenerator.generate();
-//    sendTitleMessage();
-//    sendActionBarMessage();
+    gamePhase = 0;
+
+    if (scheduler == null) {
+      scheduler = Bukkit.getServer().getScheduler();
+    } else {
+      scheduler.cancelTasks((Plugin) Main.main);
+    }
+
+//    if (!verifyGamePrerequisites()) { return; }
+
+//    GenerateBuildArea buildAreaGenerator = new GenerateBuildArea(participants.size(), host, settings);
+//    buildAreaGenerator.generate();
+
+    createAndManagePlayerTeams();
     createPlayerChain();
+    initializeTeleportOrder();
     distributePrompts();
+
+    clearOldTimer();
+    initializeTimer();
+
     timer();
   }
 
   public void stop() {}
 
   public void timer() {
-    BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+    currTime = settings.getBuildTimeSeconds();
+    numTicks = 20;
+    tick();
+  }
+
+  public void tick() {
     scheduler.scheduleSyncDelayedTask((Plugin) Main.main, new Runnable() {
       public void run() {
         for (Player p : participants) {
@@ -61,9 +87,22 @@ public class Game {
           Util.sendActionBarMessage(p, ChatColor.YELLOW + "" + ChatColor.BOLD +
                   "Your prompt is: " + ChatColor.WHITE + "" + ChatColor.BOLD + "" + playerPrompt);
         }
-        Game.this.timer();
+
+        if (numTicks == 0) {
+          tickSecond();
+          numTicks = 20;
+        }
+
+        numTicks--;
+        Game.this.tick();
       }
     }, 1L);
+  }
+
+  public void tickSecond() {
+    // BossBar timer update
+    if (currTime > 0) { currTime -= 1; }
+    Util.updateBossBarTimer(timerBar, currTime, settings.getBuildTimeSeconds());
   }
 
   private boolean verifyGamePrerequisites() {
@@ -76,7 +115,6 @@ public class Game {
 
   // Creates cycle including all players randomly to distribute prompts
   private void createPlayerChain() {
-    int numInChain = 1;
     Random rand = new Random();
     playerChain = new HashMap<>();
 
@@ -89,13 +127,12 @@ public class Game {
     Player prevPlayer = firstPlayer;
 
     // Iteratively generate chain
-    while (numInChain <= participantsClone.size()) {
+    while (participantsClone.size() > 0) {
       int playerIndex = rand.nextInt(participantsClone.size());
       player = participantsClone.get(playerIndex);
       participantsClone.remove(player);
       playerChain.put(prevPlayer, player);
       prevPlayer = player;
-      numInChain++;
     }
 
     playerChain.put(prevPlayer, firstPlayer);
@@ -111,5 +148,49 @@ public class Game {
       String playerPrompt = promptsForPlayer.get(rand.nextInt(promptsForPlayer.size()));
       playerPrompts.put(p, playerPrompt);
     }
+  }
+
+  private void initializeTeleportOrder() {
+    GameTeleport gameTeleport = new GameTeleport(host.getLocation(), participants, playerChain, settings,
+            Util.calculateNumBuildRounds(participants.size()));
+    playerPaths = gameTeleport.getPlayerPaths();
+  }
+
+  private void initializeTimer() {
+    timerBar = Util.createBossBarTimer(settings.getBuildTimeSeconds());
+    Util.addPlayersToBossBar(participants, timerBar);
+  }
+
+  private void clearOldTimer() {
+    if (timerBar == null) return;
+    timerBar.removeAll();
+    timerBar = null;
+  }
+
+  private void createScoreBoardAndManager() {
+    manager = Bukkit.getScoreboardManager();
+    assert manager != null;
+    board = manager.getMainScoreboard();
+  }
+
+  private void createAndManagePlayerTeams() {
+    playerTeams = new ArrayList<>();
+    createScoreBoardAndManager();
+
+    for (Team team : board.getTeams()) { team.unregister(); }
+
+    for (Player p : participants) {
+      Team team = board.registerNewTeam("Team " + p.getDisplayName());
+      team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
+      team.addEntry(p.getName());
+      playerTeams.add(team);
+    }
+  }
+
+  // TODO: Maybe make an announcement in chat (e.g. Round 3/5)
+  public void teleportNextPhase() {
+    if (gamePhase >= Util.calculateNumRounds(participants.size())) { return; }
+    for (Player p : participants) { p.teleport(playerPaths.get(p).get(gamePhase)); }
+    gamePhase++;
   }
 }

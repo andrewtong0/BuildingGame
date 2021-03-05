@@ -22,7 +22,6 @@ public class BGPrompt implements CommandExecutor {
     String promptString = String.join(" ", args);
     if (prompts.containsKey(player)) {
       if (onlyOnePromptAllowed) {
-
         sender.sendMessage("Replaced prompt with: " + promptString);
         prompts.get(player).remove(0);
         prompts.get(player).add(promptString);
