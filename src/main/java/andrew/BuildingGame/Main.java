@@ -23,7 +23,6 @@ public class Main extends JavaPlugin {
     this.getCommand("bgnext").setExecutor(new BGNext());
     this.getCommand("bgsettings").setExecutor(new BGSettings(this));
 
-
     settings = new GameSettings(10, 20, 20, 5, 5,
             Material.SNOW_BLOCK, Material.LIGHT_GRAY_TERRACOTTA, Material.GRAY_CONCRETE, true);
   }

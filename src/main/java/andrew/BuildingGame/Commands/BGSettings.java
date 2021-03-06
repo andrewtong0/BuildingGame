@@ -23,7 +23,7 @@ public class BGSettings implements TabExecutor {
       return true;
     }
 
-    GameSettings settings = Main.getGame().getSettings();
+    GameSettings settings = Main.getSettings();
 
     if (args.length < 2 || args.length > 3) { return incorrectUsage(sender); }
 

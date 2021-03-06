@@ -45,7 +45,6 @@ public class Game {
   enum GamePhase {
     UNSTARTED,
     INITPROMPTS,
-    INITBUILD,
     BUILDING,
     GUESSBUILD,
     GUESSWHO,
@@ -103,7 +102,7 @@ public class Game {
             case INITPROMPTS -> {
               Util.sendActionBarMessage(p, ChatColor.YELLOW + "Enter a prompt with /bgprompt");
             }
-            case INITBUILD, BUILDING -> {
+            case BUILDING -> {
               actionBarMsg = playerPrompts.get(p).get(buildingRoundNumber);
               Util.sendActionBarMessage(p, ChatColor.YELLOW + "" + ChatColor.BOLD +
                       "Your prompt is: " + ChatColor.WHITE + "" + ChatColor.BOLD + "" + actionBarMsg);
@@ -226,7 +225,7 @@ public class Game {
   public void nextPhase() {
     if (phase != GamePhase.UNSTARTED) { teleportNextPhase(); }
     switch (phase) {
-      case INITBUILD, INITPROMPTS, GUESSBUILD -> {
+      case INITPROMPTS, GUESSBUILD -> {
         endPromptPhase();
         startBuildPhase();
       }
@@ -246,10 +245,8 @@ public class Game {
       case UNSTARTED:
         return GamePhase.INITPROMPTS;
       case INITPROMPTS:
-        return GamePhase.INITBUILD;
       case GUESSBUILD:
         return GamePhase.BUILDING;
-      case INITBUILD:
       case BUILDING:
         return GamePhase.GUESSBUILD;
       case GUESSWHO:
@@ -286,6 +283,4 @@ public class Game {
     }
     gamePhase++;
   }
-
-  public GameSettings getSettings() { return settings; }
 }
