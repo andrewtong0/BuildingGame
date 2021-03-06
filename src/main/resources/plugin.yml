@@ -14,7 +14,10 @@ commands:
     usage: /bgstart
   bgprompt:
     description: Add a prompt suggestion
-    usage: /bgprompt
+    usage: /bgprompt <prompt>
   bgnext:
     description: Teleports all players to their location for the next phase
     usage: /bgnext
+  bgsettings:
+    description: Get or set game settings
+    usage: /bgsettings <get,set> <newValue>

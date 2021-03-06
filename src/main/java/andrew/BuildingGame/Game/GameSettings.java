@@ -15,9 +15,11 @@ public class GameSettings {
   private Material paddingBlockMaterial;
   private Material wallsBlockMaterial;
 
+  private boolean buildOwnFirstPrompt;
+
   public GameSettings(int buildTimeSeconds, int buildAreaWidth, int buildAreaLength, int buildAreaHeight,
                            int buildAreaPadding, Material baseBlockMaterial, Material paddingBlockMaterial,
-                           Material wallsBlockMaterial) {
+                           Material wallsBlockMaterial, boolean buildOwnFirstPrompt) {
     this.buildTimeSeconds = buildTimeSeconds;
     this.buildAreaWidth = buildAreaWidth;
     this.buildAreaLength = buildAreaLength;
@@ -29,6 +31,7 @@ public class GameSettings {
     this.baseBlockMaterial = baseBlockMaterial;
     this.paddingBlockMaterial = paddingBlockMaterial;
     this.wallsBlockMaterial = wallsBlockMaterial;
+    this.buildOwnFirstPrompt = buildOwnFirstPrompt;
   }
 
   public int getBuildTimeSeconds() { return buildTimeSeconds; }
@@ -38,6 +41,19 @@ public class GameSettings {
   public int getBuildAreaPadding() { return buildAreaPadding; }
   public int getBuildAreaXOffset() { return buildAreaXOffset; }
   public int getBuildAreaZOffset() { return buildAreaZOffset; }
+  public boolean getBuildOwnFirstPrompt() { return buildOwnFirstPrompt; }
+
+  public void setBuildTimeSeconds(int buildTimeSeconds) { this.buildTimeSeconds = buildTimeSeconds; }
+  public void setBuildAreaWidth(int buildAreaWidth) { this.buildAreaWidth = buildAreaWidth; }
+  public void setBuildAreaLength(int buildAreaLength) { this.buildAreaLength = buildAreaLength; }
+  public void setBuildAreaHeight(int buildAreaHeight) { this.buildAreaHeight = buildAreaHeight; }
+  public void setBuildAreaPadding(int buildAreaPadding) { this.buildAreaPadding = buildAreaPadding; }
+  public void setBuildAreaXOffset(int buildAreaXOffset) { this.buildAreaXOffset = buildAreaXOffset; }
+  public void setBuildAreaZOffset(int buildAreaZOffset) { this.buildAreaZOffset = buildAreaZOffset; }
+  public void setBaseBlockMaterial(Material baseBlockMaterial) { this.baseBlockMaterial = baseBlockMaterial; }
+  public void setPaddingBlockMaterial(Material paddingBlockMaterial) { this.paddingBlockMaterial = paddingBlockMaterial; }
+  public void setWallsBlockMaterial(Material wallsBlockMaterial) { this.wallsBlockMaterial = wallsBlockMaterial; }
+  public void setBuildOwnFirstPrompt(boolean buildOwnFirstPrompt) { this.buildOwnFirstPrompt = buildOwnFirstPrompt; }
 
   public Material getBaseBlockMaterial() { return baseBlockMaterial; }
   public Material getPaddingBlockMaterial() { return paddingBlockMaterial; }

@@ -51,9 +51,9 @@ public class GameTeleport {
       for (int j = 0; j < playerPaths.size(); j++) {
         Location playerLocation = new Location(
                 initPosition.getWorld(),
-                initPosition.getBlockX() + settings.getBuildAreaXOffset() * i,
+                initPosition.getBlockX() + settings.getBuildAreaXOffset() * i + 2,
                 initPosition.getBlockY(),
-                initPosition.getBlockZ() + settings.getBuildAreaZOffset() * j
+                initPosition.getBlockZ() + settings.getBuildAreaZOffset() * j + 2
         );
         if (firstPosition == null) { firstPosition = playerLocation; }
 
