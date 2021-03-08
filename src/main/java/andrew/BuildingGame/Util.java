@@ -69,6 +69,6 @@ public class Util {
   }
 
   public static int calculateNumRounds(int numPlayers) {
-    return numPlayers > 4 ? numPlayers * 2 : 4;
+    return numPlayers > 4 ? numPlayers * 2 : 5;
   }
 }

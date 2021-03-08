@@ -21,3 +21,6 @@ commands:
   bgsettings:
     description: Get or set game settings
     usage: /bgsettings <get,set> <newValue>
+  bgtour:
+    description: Tours through the game's builds
+    usage: /bgtour

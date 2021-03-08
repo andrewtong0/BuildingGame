@@ -1,6 +1,7 @@
 package andrew.BuildingGame.Game;
 
 import andrew.BuildingGame.Commands.BGPrompt;
+import andrew.BuildingGame.Game.BuildCell.BuildCellInfo;
 import andrew.BuildingGame.Main;
 import andrew.BuildingGame.Util;
 import net.md_5.bungee.api.ChatColor;
@@ -17,10 +18,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.ScoreboardManager;
 import org.bukkit.scoreboard.Team;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class Game {
   Boolean devMode;
@@ -30,23 +28,33 @@ public class Game {
   World world;
   ScoreboardManager manager;
   Scoreboard board;
+  GameTeleport gameTeleport;
   List<Team> playerTeams;
   HashMap<Player, Player> playerChain;
   HashMap<Player, List<String>> playerPrompts;
+  HashMap<Player, List<String>> playerGuesses;
   HashMap<Player, List<Location>> playerPaths;
+  HashMap<Location, BuildCellInfo> cellInformation;
   BukkitScheduler scheduler;
   BossBar timerBar;
   int currTime;
   int numTicks;
-  int gamePhase;
+  int gamePhase;  // TODO: Seems redundant to phase
   int buildingRoundNumber;
   GamePhase phase;
+
+  // Tour variables
+  List<BuildCellInfo> startLocations;
+  BuildCellInfo nextCell;
+  int stripIndex;
+  boolean cellHasNext;
 
   enum GamePhase {
     UNSTARTED,
     INITPROMPTS,
     BUILDING,
     GUESSBUILD,
+    FINALGUESS,
     GUESSWHO,
     ENDGAME,
     ERROR
@@ -59,17 +67,23 @@ public class Game {
   public void start(List<Player> participants, Player host, GameSettings settings) {
     this.participants = participants;
     this.host = host;
-    this.settings= settings;
+    this.settings = settings;
     world = host.getWorld();
     gamePhase = 0;
     playerPrompts = new HashMap<>();
+    playerGuesses = new HashMap<>();
+
+    startLocations = new ArrayList<>();
+    stripIndex = 0;
+    cellHasNext = true;
+    nextCell = null;
 
 //    if (!verifyGamePrerequisites()) { return; }
 
     stopTimer();
 
-//    GenerateBuildArea buildAreaGenerator = new GenerateBuildArea(participants.size(), host, settings);
-//    buildAreaGenerator.generate();
+    GenerateBuildArea buildAreaGenerator = new GenerateBuildArea(participants.size(), host, settings);
+    buildAreaGenerator.generate();
 
     createAndManagePlayerTeams();
     createPlayerChain();
@@ -100,19 +114,21 @@ public class Game {
           String actionBarMsg;
           switch (phase) {
             case INITPROMPTS -> {
-              Util.sendActionBarMessage(p, ChatColor.YELLOW + "Enter a prompt with /bgprompt");
+              Util.sendActionBarMessage(p, ChatColor.GOLD + "Enter a prompt with /bgprompt");
             }
             case BUILDING -> {
-              actionBarMsg = playerPrompts.get(p).get(buildingRoundNumber);
-              Util.sendActionBarMessage(p, ChatColor.YELLOW + "" + ChatColor.BOLD +
-                      "Your prompt is: " + ChatColor.WHITE + "" + ChatColor.BOLD + "" + actionBarMsg);
+              if (playerPrompts.get(p).size() > buildingRoundNumber) {
+                actionBarMsg = playerPrompts.get(p).get(buildingRoundNumber);
+                Util.sendActionBarMessage(p, ChatColor.GOLD + "" + ChatColor.BOLD +
+                        "Your prompt is: " + ChatColor.WHITE + "" + ChatColor.BOLD + "" + actionBarMsg);
+              }
             }
             case GUESSBUILD -> {
-              Util.sendActionBarMessage(p, ChatColor.YELLOW + "Guess what this build is! Enter your guess with " +
+              Util.sendActionBarMessage(p, ChatColor.GOLD + "Guess what this build is! Enter your guess with " +
                       "/bgprompt");
             }
             case GUESSWHO -> {
-              Util.sendActionBarMessage(p, ChatColor.YELLOW + "Guess who you've been following this game! " +
+              Util.sendActionBarMessage(p, ChatColor.GOLD + "Guess who you've been following this game! " +
                       "Enter your guess with /bgprompt");
             }
           }
@@ -186,9 +202,10 @@ public class Game {
   }
 
   private void initializeTeleportOrder() {
-    GameTeleport gameTeleport = new GameTeleport(host.getLocation(), participants, playerChain, settings,
+    gameTeleport = new GameTeleport(host.getLocation(), participants, playerChain, settings,
             Util.calculateNumBuildRounds(participants.size()));
     playerPaths = gameTeleport.getPlayerPaths();
+    cellInformation = gameTeleport.getCellListings();
   }
 
   private void initializeTimerBar() {
@@ -223,13 +240,18 @@ public class Game {
 
   // TODO: Maybe make an announcement in chat (e.g. Round 3/5)
   public void nextPhase() {
+    if (phase == GamePhase.ENDGAME) {
+      stopTimer();
+      populateCellInformation();
+      return;
+    }
     if (phase != GamePhase.UNSTARTED) { teleportNextPhase(); }
     switch (phase) {
       case INITPROMPTS, GUESSBUILD -> {
         endPromptPhase();
         startBuildPhase();
       }
-      case BUILDING -> {
+      case FINALGUESS, BUILDING -> {
         endBuildPhase();
         startPromptPhase();
       }
@@ -240,7 +262,10 @@ public class Game {
   }
 
   private GamePhase determineNextPhase() {
-    if (gamePhase >= Util.calculateNumRounds(participants.size())) { return GamePhase.ENDGAME; }
+    if (gamePhase > Util.calculateNumRounds(participants.size())) {
+      return GamePhase.FINALGUESS;
+    }
+
     switch (phase) {
       case UNSTARTED:
         return GamePhase.INITPROMPTS;
@@ -249,6 +274,7 @@ public class Game {
         return GamePhase.BUILDING;
       case BUILDING:
         return GamePhase.GUESSBUILD;
+      case FINALGUESS:
       case GUESSWHO:
         return GamePhase.ENDGAME;
       default:
@@ -276,11 +302,56 @@ public class Game {
   }
 
   private void teleportNextPhase() {
-    if (gamePhase >= Util.calculateNumRounds(participants.size())) { return; }
+    if (gamePhase > Util.calculateNumRounds(participants.size())) { return; }
     for (Player p : participants) {
       p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
       p.teleport(playerPaths.get(p).get(gamePhase));
     }
     gamePhase++;
+  }
+
+  private void populateCellInformation() {
+    for (Player p : participants) {
+      int counter = 0;
+      for (Location location : playerPaths.get(p)) {
+        BuildCellInfo cell = cellInformation.get(location);
+        if (counter % 2 == 0) {
+          String prompt = playerPrompts.get(p).get(counter / 2);
+          cell.setBuildingPrompt(prompt);
+          cell.setPromptBuilder(p);
+        } else {
+          String guess = playerGuesses.get(p).get((counter / 2) + 1);
+          cell.setBuildGuess(guess);
+          cell.setBuildGuesser(p);
+        }
+        counter++;
+
+        Location nextLocation = new Location(location.getWorld(), location.getBlockX() + settings.getBuildAreaXOffset(), location.getBlockY(), location.getBlockZ());
+        if (cellInformation.containsKey(nextLocation)) { cell.setNextCell(nextLocation); }
+      }
+    }
+
+    for (Player p : participants) {
+      startLocations.add(cellInformation.get(playerPaths.get(p).get(0)));
+    }
+  }
+
+  public void tourBuilds() {
+    if (nextCell == null && stripIndex < startLocations.size()) {
+      nextCell = startLocations.get(stripIndex);
+    }
+    Location nextBuildLocation = nextCell.getCellLocation();
+    Bukkit.broadcastMessage(ChatColor.WHITE + nextCell.getBuildingPrompt() + " built by: " + nextCell.getPromptBuilder().getName());
+    Bukkit.broadcastMessage(ChatColor.WHITE + nextCell.getBuildGuess() + " guessed by: " + nextCell.getBuildGuesser().getName());
+    for (Player p : participants) {
+      p.teleport(nextBuildLocation);
+    }
+
+    if (nextCell.getNextCell() == null) {
+      nextCell = null;
+      stripIndex++;
+    } else {
+      nextCell = cellInformation.get(nextCell.getNextCell());
+    }
   }
 }
