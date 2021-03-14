@@ -1,7 +1,8 @@
 package andrew.BuildingGame.Game;
 
 import andrew.BuildingGame.Commands.BGPrompt;
-import andrew.BuildingGame.Game.BuildCell.BuildCellInfo;
+import andrew.BuildingGame.Game.Plot.LocationPrompts;
+import andrew.BuildingGame.Game.Plot.Plot;
 import andrew.BuildingGame.Main;
 import andrew.BuildingGame.Util;
 import net.md_5.bungee.api.ChatColor;
@@ -31,10 +32,12 @@ public class Game {
   GameTeleport gameTeleport;
   List<Team> playerTeams;
   HashMap<Player, Player> playerChain;
+  HashMap<Player, Location> currPlayerLocations;
   HashMap<Player, List<String>> playerPrompts;
   HashMap<Player, List<String>> playerGuesses;
   HashMap<Player, List<Location>> playerPaths;
-  HashMap<Location, BuildCellInfo> cellInformation;
+  HashMap<Location, Plot> cellInformation;
+  HashMap<Location, LocationPrompts> locationPrompts;
   BukkitScheduler scheduler;
   BossBar timerBar;
   int currTime;
@@ -44,8 +47,8 @@ public class Game {
   GamePhase phase;
 
   // Tour variables
-  List<BuildCellInfo> startLocations;
-  BuildCellInfo nextCell;
+  List<Plot> startLocations;
+  Plot nextCell;
   int stripIndex;
   boolean cellHasNext;
 
@@ -72,7 +75,8 @@ public class Game {
     gamePhase = 0;
     playerPrompts = new HashMap<>();
     playerGuesses = new HashMap<>();
-
+    locationPrompts = new HashMap<>();
+    currPlayerLocations = new HashMap<>();
     startLocations = new ArrayList<>();
     stripIndex = 0;
     cellHasNext = true;
@@ -189,8 +193,19 @@ public class Game {
     HashMap<Player, String> prompts = BGPrompt.getPrompts();
     for (Player p : participants) {
       String playerPrompt;
-      if (assignSelf) { playerPrompt = prompts.get(p);
-      } else { playerPrompt = prompts.get(playerChain.get(p)); }
+      Player prompter;
+      if (assignSelf) {
+        prompter = p;
+      } else {
+        prompter = playerChain.get(p);
+      }
+      playerPrompt = prompts.get(prompter);
+
+      Location currLocation = currPlayerLocations.get(p);
+      if (locationPrompts.containsKey(currLocation)) {
+        locationPrompts.get(currLocation).setPromptOrGuess(playerPrompt, prompter);
+      }
+
       if (playerPrompts.containsKey(p)) { playerPrompts.get(p).add(playerPrompt); }
       else {
         List<String> playerPromptList = new ArrayList<>();
@@ -206,6 +221,15 @@ public class Game {
             Util.calculateNumBuildRounds(participants.size()));
     playerPaths = gameTeleport.getPlayerPaths();
     cellInformation = gameTeleport.getCellListings();
+
+    for (Player p : participants) {
+      for (Location l : playerPaths.get(p)) {
+        if (!locationPrompts.containsKey(l)) {
+          LocationPrompts lp = new LocationPrompts(l);
+          locationPrompts.put(l, lp);
+        }
+      }
+    }
   }
 
   private void initializeTimerBar() {
@@ -262,8 +286,8 @@ public class Game {
   }
 
   private GamePhase determineNextPhase() {
-    if (gamePhase > Util.calculateNumRounds(participants.size())) {
-      return GamePhase.FINALGUESS;
+    if (gamePhase >= Util.calculateNumRounds(participants.size())) {
+      return GamePhase.ENDGAME;
     }
 
     switch (phase) {
@@ -271,6 +295,9 @@ public class Game {
         return GamePhase.INITPROMPTS;
       case INITPROMPTS:
       case GUESSBUILD:
+        for (Player p : participants) {
+          locationPrompts.get(currPlayerLocations.get(p)).setBuilder(p);
+        }
         return GamePhase.BUILDING;
       case BUILDING:
         return GamePhase.GUESSBUILD;
@@ -302,29 +329,25 @@ public class Game {
   }
 
   private void teleportNextPhase() {
-    if (gamePhase > Util.calculateNumRounds(participants.size())) { return; }
     for (Player p : participants) {
+      if (gamePhase >= playerPaths.get(p).size()) { continue; }
       p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
-      p.teleport(playerPaths.get(p).get(gamePhase));
+      Location playerNextLocation = playerPaths.get(p).get(gamePhase);
+      currPlayerLocations.put(p, playerNextLocation);
+      p.teleport(playerNextLocation);
     }
     gamePhase++;
   }
 
   private void populateCellInformation() {
     for (Player p : participants) {
-      int counter = 0;
       for (Location location : playerPaths.get(p)) {
-        BuildCellInfo cell = cellInformation.get(location);
-        if (counter % 2 == 0) {
-          String prompt = playerPrompts.get(p).get(counter / 2);
-          cell.setBuildingPrompt(prompt);
-          cell.setPromptBuilder(p);
-        } else {
-          String guess = playerGuesses.get(p).get((counter / 2) + 1);
-          cell.setBuildGuess(guess);
-          cell.setBuildGuesser(p);
-        }
-        counter++;
+        Plot cell = cellInformation.get(location);
+        LocationPrompts prompts = locationPrompts.get(location);
+        cell.setBuildGuess(prompts.getGuess());
+        cell.setBuildGuesser(prompts.getGuesser());
+        cell.setBuildingPrompt(prompts.getPrompt());
+        cell.setInitialPromptGiver(prompts.getPrompter());
 
         Location nextLocation = new Location(location.getWorld(), location.getBlockX() + settings.getBuildAreaXOffset(), location.getBlockY(), location.getBlockZ());
         if (cellInformation.containsKey(nextLocation)) { cell.setNextCell(nextLocation); }

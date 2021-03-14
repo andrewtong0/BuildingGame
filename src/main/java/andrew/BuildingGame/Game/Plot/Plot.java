@@ -1,9 +1,9 @@
-package andrew.BuildingGame.Game.BuildCell;
+package andrew.BuildingGame.Game.Plot;
 
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-public class BuildCellInfo {
+public class Plot {
   Location cellLocation;
 
   Player initialPromptGiver;
@@ -15,7 +15,7 @@ public class BuildCellInfo {
 
   Location nextCell;
 
-  public BuildCellInfo(Location cellLocation, Player promptBuilder) {
+  public Plot(Location cellLocation, Player promptBuilder) {
     this.cellLocation = cellLocation;
     this.promptBuilder = promptBuilder;
   }

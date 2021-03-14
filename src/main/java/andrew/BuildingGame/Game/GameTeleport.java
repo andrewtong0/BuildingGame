@@ -1,6 +1,6 @@
 package andrew.BuildingGame.Game;
 
-import andrew.BuildingGame.Game.BuildCell.BuildCellInfo;
+import andrew.BuildingGame.Game.Plot.Plot;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -15,7 +15,7 @@ public class GameTeleport {
   HashMap<Player, Player> playerChain;
   HashMap<Player, List<Location>> playerPaths;
   GameSettings settings;
-  HashMap<Location, BuildCellInfo> cellListings;
+  HashMap<Location, Plot> cellListings;
   int numRounds;
 
   public GameTeleport(Location initPosition, List<Player> participants, HashMap<Player, Player> playerChain,
@@ -83,7 +83,7 @@ public class GameTeleport {
   }
 
   private void addCellToListing(Location location, Player p) {
-    BuildCellInfo cellInfo = new BuildCellInfo(location, p);
+    Plot cellInfo = new Plot(location, p);
     cellListings.put(location, cellInfo);
   }
 
@@ -91,5 +91,5 @@ public class GameTeleport {
 
   public HashMap<Player, List<Location>> getPlayerPaths() { return playerPaths; }
 
-  public HashMap<Location, BuildCellInfo> getCellListings() { return cellListings; }
+  public HashMap<Location, Plot> getCellListings() { return cellListings; }
 }
