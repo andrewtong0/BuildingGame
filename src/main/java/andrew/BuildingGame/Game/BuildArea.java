@@ -1,42 +1,44 @@
 package andrew.BuildingGame.Game;
 
-import andrew.BuildingGame.Util;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
-public class GenerateBuildArea {
-  int numPlayers;
-  Player host;
+public class BuildArea {
   GameSettings settings;
+  GameVars vars;
+  Player host;
   World world;
+  int numPlayers;
 
-  public GenerateBuildArea(int numPlayers, Player host, GameSettings settings) {
-    this.numPlayers = numPlayers;
-    this.host = host;
+  public BuildArea(GameSettings settings, GameVars vars) {
     this.settings = settings;
-    world = host.getWorld();
+    this.vars = vars;
+
+    host = vars.getHost();
+    world = vars.getWorld();
+    numPlayers = vars.getNumPlayers();
   }
 
-  public void generate() {
-    for (int i = 0; i < numPlayers; i++) { generateBuildingStrip(i); }
-  }
+//  public void generate() {
+//    for (int i = 0; i < numPlayers; i++) { generateBuildingStrip(i); }
+//  }
 
-  private void generateBuildingStrip(int index) {
-    for (int i = 0; i < Util.calculateNumBuildRounds(numPlayers); i++) {
-      Location hostLocation = host.getLocation();
-      Location stripLocation = new Location(
-              host.getWorld(),
-              hostLocation.getBlockX() + (settings.getBuildAreaXOffset() * i),
-              hostLocation.getBlockY(),
-              hostLocation.getBlockZ() + (settings.getBuildAreaZOffset() * index)
-      );
-      generateBuildingCell(stripLocation);
-    }
-  }
+//  private void generateBuildingStrip(int index) {
+//    for (int i = 0; i < vars.getNumBuildRounds(); i++) {
+//      Location hostLocation = host.getLocation();
+//      Location stripLocation = new Location(
+//              host.getWorld(),
+//              hostLocation.getBlockX() + (settings.getBuildAreaXOffset() * i),
+//              hostLocation.getBlockY(),
+//              hostLocation.getBlockZ() + (settings.getBuildAreaZOffset() * index)
+//      );
+//      generateBuildingCell(stripLocation);
+//    }
+//  }
 
-  private void generateBuildingCell(Location hostLocation) {
+  public void generateBuildingCell(Location hostLocation) {
     int padding = settings.getBuildAreaPadding();
     int width = settings.getBuildAreaWidth();
     int length = settings.getBuildAreaLength();

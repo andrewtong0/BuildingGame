@@ -15,7 +15,7 @@ public class BGReady implements CommandExecutor{
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-  if (!(sender instanceof Player)) { return false; }
+    if (!(sender instanceof Player)) { return false; }
     Player player = (Player) sender;
     if (readyPlayers.contains(player)) {
       readyPlayers.remove(player);

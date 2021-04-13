@@ -18,8 +18,8 @@ public class GameSettings {
   private boolean buildOwnFirstPrompt;
 
   public GameSettings(int buildTimeSeconds, int buildAreaWidth, int buildAreaLength, int buildAreaHeight,
-                           int buildAreaPadding, Material baseBlockMaterial, Material paddingBlockMaterial,
-                           Material wallsBlockMaterial, boolean buildOwnFirstPrompt) {
+                      int buildAreaPadding, Material baseBlockMaterial, Material paddingBlockMaterial,
+                      Material wallsBlockMaterial, boolean buildOwnFirstPrompt) {
     this.buildTimeSeconds = buildTimeSeconds;
     this.buildAreaWidth = buildAreaWidth;
     this.buildAreaLength = buildAreaLength;
