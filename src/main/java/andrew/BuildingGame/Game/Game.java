@@ -1,6 +1,8 @@
 package andrew.BuildingGame.Game;
 
 import andrew.BuildingGame.Commands.BGPrompt;
+import net.md_5.bungee.api.ChatMessageType;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -26,6 +28,7 @@ public class Game {
   HashMap<Player, String> currPromptStrings;
   GameStateManager.GameState gameState;
   int roundNumber;  // Determines index in PlayerData path array to teleport players
+  int[] tourIndices; // plotGrid indices we are currently in, empty uninitialized
 
   public Game(GameSettings settings, GameVars vars) {
     // Static Data Initialization
@@ -57,15 +60,22 @@ public class Game {
     roundNumber = 0;
   }
 
-  public void startGame() {
-    timer.startNextTimer(plotsData, participantsData, gameState);
+  public GameSettings getSettings() {
+    return settings;
   }
 
-  public void advancePhase() {
+  public void startGame() {
+    timer.startNextTimer(plotsData, participantsData, gameState, null);
+  }
+
+  public void startTimer(int numSeconds) {
+    timer.startNextTimer(plotsData, participantsData, gameState, numSeconds);
+  }
+
+  public void advanceGamePhase() {
     if (gameState != GameStateManager.GameState.INIT && gameState != GameStateManager.GameState.INITPROMPT) {
       roundNumber++;
     }
-    // TODO: This might be > if off by one
     boolean isFinalRound = roundNumber >= vars.getNumRounds();
 
     // Update participant and plot data and start next timer based on them
@@ -78,14 +88,14 @@ public class Game {
     }
 
     gameState = GameStateManager.getNextState(gameState, isFinalRound);
-    timer.startNextTimer(plotsData, participantsData, gameState);
+    timer.startNextTimer(plotsData, participantsData, gameState, null);
 
     if (!isFinalRound && gameState != GameStateManager.GameState.INIT && gameState != GameStateManager.GameState.INITPROMPT) {
       for (Player p: participants) {
         p.teleport(participantsData.get(p).path.get(roundNumber));
       }
     }
-    currPromptStrings = new HashMap<>();
+    BGPrompt.clearPrompts();
   }
 
   private void updateParticipantData(PlayerData pd) {
@@ -117,6 +127,45 @@ public class Game {
         receivingPlayerPlot.setGivenPrompt(initPrompt);
         // TODO: set guessed prompt as the prompt for the next location, should replicate code above
       }
+    }
+  }
+
+  public void advanceTourPhase() {
+    // Instantiate indices and terminate if complete
+    if (tourIndices == null) { tourIndices = new int[]{0, 0}; }
+    if (tourIndices[0] >= vars.getNumPlayers()) { return; }
+
+    // Execute teleportation
+    ChatColor builderNameColour = ChatColor.GREEN;
+    ChatColor promptNameColour = ChatColor.YELLOW;
+    ChatColor promptStringColour = ChatColor.GOLD;
+    ChatColor guesserNameColour = ChatColor.RED;
+    ChatColor guessStringColour = ChatColor.DARK_RED;
+    ChatColor regularColour = ChatColor.WHITE; // TODO: add this
+
+    Location tpLocation = plotGrid[tourIndices[1]][tourIndices[0]];
+    BuildingPlot plotData = plotsData.get(tpLocation);
+    Prompt givenPrompt = plotData.getGivenPrompt();
+    Prompt guessedPrompt = plotData.getGuessedPrompt();
+    String separator = "==================";
+    String initialPromptString = "\"" + promptStringColour + givenPrompt.getPromptString() + regularColour + "\"" +
+            " - suggested by " + promptNameColour + givenPrompt.getPromptGiver().getName() + ", built by " +
+            builderNameColour + plotData.getBuilder().getName();
+    String resultPromptString = guesserNameColour + guessedPrompt.getPromptGiver().getName() +
+            " guessed that this was \"" + guessStringColour + guessedPrompt.getPromptString() + "\"";
+    for (Player p : participants) {
+      p.teleport(tpLocation);
+      p.sendMessage(separator);
+      p.sendMessage(initialPromptString);
+      p.sendMessage(resultPromptString);
+      p.sendMessage(separator);
+    }
+
+    // Move to the next cell if possible, otherwise reset
+    tourIndices[1] = (tourIndices[1] + 1) % vars.getNumBuildRounds();
+    // If tourIndices == 0, we are entering a new strip
+    if (tourIndices[1] == 0) {
+      tourIndices[0]++;
     }
   }
 }

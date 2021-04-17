@@ -15,7 +15,6 @@ public class BGStart implements CommandExecutor {
     Main.createGame();
     Game game = Main.getGame();
     game.startGame();
-
     return true;
   }
 }

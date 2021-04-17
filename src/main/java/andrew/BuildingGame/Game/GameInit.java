@@ -13,7 +13,7 @@ public class GameInit {
   public static Location[][] initPlotGrid(GameSettings settings, GameVars vars) {
     int numPlayers = vars.getNumPlayers();
     int numBuildRounds = vars.getNumBuildRounds();
-    Location[][] plotGrid = new Location[numPlayers][numBuildRounds];
+    Location[][] plotGrid = new Location[numBuildRounds][numPlayers];
     Location origin = vars.getOrigin();
 
     for (int row = 0; row < numBuildRounds; row++) {

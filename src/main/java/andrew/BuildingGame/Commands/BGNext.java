@@ -12,7 +12,7 @@ public class BGNext implements CommandExecutor {
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
     game = Main.getGame();
-    game.advancePhase();
+    game.advanceGamePhase();
     return true;
   }
 }

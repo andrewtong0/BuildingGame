@@ -24,3 +24,6 @@ commands:
   bgtour:
     description: Tours through the game's builds
     usage: /bgtour
+  bgtimer:
+    description: Starts a new timer with the specified number of seconds
+    usage: /bgtimer <duration>

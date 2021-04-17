@@ -19,10 +19,10 @@ public class BGReady implements CommandExecutor{
     Player player = (Player) sender;
     if (readyPlayers.contains(player)) {
       readyPlayers.remove(player);
-      Bukkit.broadcastMessage(ChatColor.WHITE + player.getName() + ChatColor.RED + " is no longer ready!");
+      Bukkit.broadcastMessage(ChatColor.WHITE + "" + player.getName() + ChatColor.RED + "" + " is no longer ready!");
     } else {
       readyPlayers.add(player);
-      Bukkit.broadcastMessage(ChatColor.WHITE + player.getName() + ChatColor.GREEN + " is ready!");
+      Bukkit.broadcastMessage(ChatColor.WHITE + "" +  player.getName() + ChatColor.GREEN + "" + " is ready!");
     }
 
     return true;

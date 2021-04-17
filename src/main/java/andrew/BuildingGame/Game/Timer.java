@@ -25,32 +25,35 @@ public class Timer {
     this.settings = settings;
     this.vars = vars;
     this.scheduler = Bukkit.getServer().getScheduler();
-    timerBar = Util.createBossBarTimer(settings.getBuildTimeSeconds());
-    Util.addPlayersToBossBar(vars.getParticipants(), timerBar);
     this.currState = GameStateManager.GameState.INIT;
   }
 
   public void startNextTimer(HashMap<Location, BuildingPlot> plotsData, HashMap<Player, PlayerData> participantsData,
-                             GameStateManager.GameState newState) {
+                             GameStateManager.GameState newState, Integer timerDurationSeconds) {
     stopTimer();
     setGameState(newState);
-    startTimer(plotsData, participantsData);
+    startTimer(plotsData, participantsData, timerDurationSeconds);
   }
 
   private void setGameState(GameStateManager.GameState newState) {
     this.currState = newState;
   }
 
-  private void startTimer(HashMap<Location, BuildingPlot> plotsData, HashMap<Player, PlayerData> participantsData) {
+  private void startTimer(HashMap<Location, BuildingPlot> plotsData, HashMap<Player, PlayerData> participantsData,
+                          Integer timerDurationSeconds) {
     clearOldTimer();
     this.plotsData = plotsData;
     this.participantsData = participantsData;
-    currTime = settings.getBuildTimeSeconds();
-    ticksLeftInSecond = 20;
+    if (timerDurationSeconds != null) {
+      timerBar = Util.createBossBarTimer(timerDurationSeconds);
+      currTime = settings.getBuildTimeSeconds();
+      ticksLeftInSecond = 20;
+      Util.addPlayersToBossBar(vars.getParticipants(), timerBar);
+    }
     runTimer();
   }
 
-  private void clearOldTimer() {
+  public void clearOldTimer() {
     if (timerBar == null) return;
     timerBar.removeAll();
   }

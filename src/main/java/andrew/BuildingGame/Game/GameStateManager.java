@@ -36,7 +36,7 @@ public class GameStateManager {
                 "" + bp.getGivenPrompt().getPromptString();
       }
       case GUESS -> ChatColor.GOLD + "Guess what this build is! Enter your guess with /bgprompt";
-      default -> null;
+      default -> "Game Complete!";
     };
   }
 }

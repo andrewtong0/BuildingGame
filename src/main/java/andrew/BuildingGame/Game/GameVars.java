@@ -44,20 +44,17 @@ public class GameVars {
     return numRounds;
   }
   public int getNumBuildRounds() {
-    if (numPlayers > 7) {
-      // TODO: Implement the correct formula here
+    if (numPlayers > 4) {
       return 3;
     } else {
       return 2;
     }
   }
   private int calculateNumRounds() {
-    if (numPlayers > 7) {
-      // TODO: Calculate this correctly
+    if (numPlayers > 4) {
       return 7;
     } else {
       return 4;
-//      return numPlayers
     }
   }
 }
