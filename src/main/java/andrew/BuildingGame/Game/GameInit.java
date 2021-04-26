@@ -1,5 +1,6 @@
 package andrew.BuildingGame.Game;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Scoreboard;
@@ -10,6 +11,11 @@ import java.util.List;
 import java.util.Random;
 
 public class GameInit {
+  public static void resetPlayerState(Player p) {
+    // Change to creative
+    p.setGameMode(GameMode.CREATIVE);
+  }
+
   public static Location[][] initPlotGrid(GameSettings settings, GameVars vars) {
     int numPlayers = vars.getNumPlayers();
     int numBuildRounds = vars.getNumBuildRounds();
@@ -59,18 +65,18 @@ public class GameInit {
 
   public static HashMap<Player, List<Location>> generatePlayerPaths(GameVars vars, Location[][] plotGrid) {
     HashMap<Player, List<Location>> playerPaths = new HashMap<>();
-    for (int i = 0; i < vars.numPlayers; i++) {
+    for (int i = 0; i < vars.getNumPlayers(); i++) {
       List<Location> path = new ArrayList<>();
       // Only advance a row if it is a build row
       boolean isGuessRound = false;
       int col = i;
       int row = 0;
-      for (int j = 0; j < vars.numRounds; j++) {
+      for (int j = 0; j < vars.getNumRounds(); j++) {
         path.add(plotGrid[row][col]);
 
         if (isGuessRound) { row++; }
         isGuessRound = !isGuessRound;
-        col = (col + 1) % vars.numPlayers;
+        col = (col + 1) % vars.getNumPlayers();
       }
       playerPaths.put(vars.getParticipants().get(i), path);
     }

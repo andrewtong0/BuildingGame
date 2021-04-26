@@ -6,6 +6,7 @@ import net.minecraft.server.v1_16_R3.IChatBaseComponent;
 import net.minecraft.server.v1_16_R3.PacketPlayOutTitle;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
@@ -62,5 +63,16 @@ public class Util {
 
   public static void addPlayersToBossBar(List<Player> players, BossBar bar) {
     for (Player p : players) bar.addPlayer(p);
+  }
+
+  public static Location offsetTeleport(GameSettings settings, Location l) {
+    int xTeleportOffset = settings.getBuildAreaWidth() / 2 + settings.getBuildAreaPadding();
+    int zTeleportOffset = settings.getBuildAreaLength() / 2 + settings.getBuildAreaPadding();
+    return new Location(
+            l.getWorld(),
+            l.getX() + xTeleportOffset,
+            l.getY(),
+            l.getZ() + zTeleportOffset
+    );
   }
 }

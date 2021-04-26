@@ -5,7 +5,10 @@ import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.StringUtils;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -49,11 +52,11 @@ public class Game {
     GameInit.generateBuildCells(buildArea, plotGrid);
     plotsData = GameInit.initPlotsData(plotGrid);
 
-
     HashMap<Player, List<Location>> playerPaths = GameInit.generatePlayerPaths(vars, plotGrid);
     playerChain = GameInit.createPlayerChain(participants);
     teamManager.resetPlayerTeams();
     for (Player p : participants) {
+      GameInit.resetPlayerState(p);
       participantsData.put(p, new PlayerData(p, playerPaths.get(p)));
     }
     this.gameState = GameStateManager.GameState.INIT;
@@ -92,9 +95,12 @@ public class Game {
 
     if (!isFinalRound && gameState != GameStateManager.GameState.INIT && gameState != GameStateManager.GameState.INITPROMPT) {
       for (Player p: participants) {
-        p.teleport(participantsData.get(p).path.get(roundNumber));
+        p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
+        Location teleportLocation = participantsData.get(p).path.get(roundNumber);
+        p.teleport(Util.offsetTeleport(settings, teleportLocation));
       }
     }
+    if (isFinalRound) { teamManager.clearPlayerTeams(); }
     BGPrompt.clearPrompts();
   }
 
@@ -136,28 +142,31 @@ public class Game {
     if (tourIndices[0] >= vars.getNumPlayers()) { return; }
 
     // Execute teleportation
+    String promptStringColour = ChatColor.BOLD + "" + ChatColor.YELLOW;
     ChatColor builderNameColour = ChatColor.GREEN;
-    ChatColor promptNameColour = ChatColor.YELLOW;
-    ChatColor promptStringColour = ChatColor.GOLD;
-    ChatColor guesserNameColour = ChatColor.RED;
-    ChatColor guessStringColour = ChatColor.DARK_RED;
-    ChatColor regularColour = ChatColor.WHITE; // TODO: add this
+    ChatColor promptNameColour = ChatColor.RED;
+    ChatColor guesserNameColour = ChatColor.DARK_GREEN;
+    ChatColor guessStringColour = ChatColor.GOLD;
+    ChatColor regularColour = ChatColor.WHITE;
 
     Location tpLocation = plotGrid[tourIndices[1]][tourIndices[0]];
     BuildingPlot plotData = plotsData.get(tpLocation);
     Prompt givenPrompt = plotData.getGivenPrompt();
     Prompt guessedPrompt = plotData.getGuessedPrompt();
-    String separator = "==================";
-    String initialPromptString = "\"" + promptStringColour + givenPrompt.getPromptString() + regularColour + "\"" +
-            " - suggested by " + promptNameColour + givenPrompt.getPromptGiver().getName() + ", built by " +
-            builderNameColour + plotData.getBuilder().getName();
-    String resultPromptString = guesserNameColour + guessedPrompt.getPromptGiver().getName() +
-            " guessed that this was \"" + guessStringColour + guessedPrompt.getPromptString() + "\"";
+    String separator = ChatColor.STRIKETHROUGH + StringUtils.repeat(" ", 80);
+    String buildTitle = "\"" + promptStringColour + givenPrompt.getPromptString() + regularColour + "\"" + " built by "
+            + builderNameColour + plotData.getBuilder().getName() + "\n";
+    String promptGiver = regularColour + "Prompt given by " + promptNameColour +
+            givenPrompt.getPromptGiver().getName() + "\n";
+    String guessString = guesserNameColour + guessedPrompt.getPromptGiver().getName() + "'s" + regularColour +
+            " guess: " + guessStringColour + guessedPrompt.getPromptString() + "\n";
+
     for (Player p : participants) {
-      p.teleport(tpLocation);
+      p.teleport(Util.offsetTeleport(settings, tpLocation));
       p.sendMessage(separator);
-      p.sendMessage(initialPromptString);
-      p.sendMessage(resultPromptString);
+      p.sendMessage(buildTitle);
+      p.sendMessage(promptGiver);
+      p.sendMessage(guessString);
       p.sendMessage(separator);
     }
 

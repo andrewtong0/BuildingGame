@@ -22,7 +22,7 @@ public class TeamManager {
     board = manager.getMainScoreboard();
   }
 
-  private void clearPlayerTeams() {
+  public void clearPlayerTeams() {
     for (Team team : board.getTeams()) { team.unregister(); }
   }
 
