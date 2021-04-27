@@ -1,9 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="jar" name="BuildingGame:jar">
-    <output-path>$PROJECT_DIR$/../../Game_Servers/Minecraft Servers/GS/plugins</output-path>
-    <root id="archive" name="BuildingGame.jar">
-      <element id="module-output" name="BuildingGame" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/../../Game_Servers/Minecraft Servers/BUILDTOOLS/BuildTools/craftbukkit-1.16.5.jar" path-in-jar="/" />
-    </root>
-  </artifact>
-</component>
