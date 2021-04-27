@@ -32,11 +32,11 @@ public class GameStateManager {
       case INITPROMPT -> ChatColor.GOLD + "Enter a prompt with /bgprompt";
       case BUILD -> {
         assert bp != null;
-        yield ChatColor.GOLD + "" + ChatColor.BOLD + "Your prompt is: " + ChatColor.WHITE + "" + ChatColor.BOLD +
+        yield ChatColor.GOLD + "" + ChatColor.BOLD + "Your prompt is: " + ChatColor.DARK_GREEN + "" + ChatColor.BOLD +
                 "" + bp.getGivenPrompt().getPromptString();
       }
       case GUESS -> ChatColor.GOLD + "Guess what this build is! Enter your guess with /bgprompt";
-      default -> "Game Complete!";
+      default -> "";
     };
   }
 }

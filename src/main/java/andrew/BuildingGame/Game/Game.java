@@ -2,6 +2,7 @@ package andrew.BuildingGame.Game;
 
 import andrew.BuildingGame.Commands.BGPrompt;
 import net.md_5.bungee.api.ChatMessageType;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -52,8 +53,9 @@ public class Game {
     GameInit.generateBuildCells(buildArea, plotGrid);
     plotsData = GameInit.initPlotsData(plotGrid);
 
-    HashMap<Player, List<Location>> playerPaths = GameInit.generatePlayerPaths(vars, plotGrid);
     playerChain = GameInit.createPlayerChain(participants);
+    HashMap<Player, Player> reversePlayerChain = Util.reversePlayerChain(playerChain);
+    HashMap<Player, List<Location>> playerPaths = GameInit.generatePlayerPaths(vars, plotGrid, reversePlayerChain);
     teamManager.resetPlayerTeams();
     for (Player p : participants) {
       GameInit.resetPlayerState(p);
@@ -100,7 +102,15 @@ public class Game {
         p.teleport(Util.offsetTeleport(settings, teleportLocation));
       }
     }
-    if (isFinalRound) { teamManager.clearPlayerTeams(); }
+
+    if (gameState == GameStateManager.GameState.BUILD) { Bukkit.broadcastMessage(ChatColor.GOLD + "Time to build!"); }
+    if (gameState == GameStateManager.GameState.GUESS) { Bukkit.broadcastMessage(ChatColor.GOLD + "Guess what this build is!"); }
+
+    if (isFinalRound) {
+      teamManager.clearPlayerTeams();
+      Bukkit.broadcastMessage(ChatColor.GOLD + "Building Phase Complete!");
+      Bukkit.broadcastMessage(ChatColor.GOLD + "Time to Review the Builds!");
+    }
     BGPrompt.clearPrompts();
   }
 

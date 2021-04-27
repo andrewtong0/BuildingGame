@@ -63,8 +63,17 @@ public class GameInit {
     return playerChain;
   }
 
-  public static HashMap<Player, List<Location>> generatePlayerPaths(GameVars vars, Location[][] plotGrid) {
+  public static HashMap<Player, List<Location>> generatePlayerPaths(GameVars vars, Location[][] plotGrid,
+                                                                    HashMap<Player, Player> playerChain) {
     HashMap<Player, List<Location>> playerPaths = new HashMap<>();
+    List<Player> playerChainList = new ArrayList<>();
+    Player nextPlayer = vars.getHost();
+
+    for (int i = 0; i < vars.getNumPlayers(); i++) {
+      playerChainList.add(nextPlayer);
+      nextPlayer = playerChain.get(nextPlayer);
+    }
+
     for (int i = 0; i < vars.getNumPlayers(); i++) {
       List<Location> path = new ArrayList<>();
       // Only advance a row if it is a build row
@@ -78,7 +87,7 @@ public class GameInit {
         isGuessRound = !isGuessRound;
         col = (col + 1) % vars.getNumPlayers();
       }
-      playerPaths.put(vars.getParticipants().get(i), path);
+      playerPaths.put(playerChainList.get(i), path);
     }
     return playerPaths;
   }

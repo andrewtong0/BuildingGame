@@ -13,7 +13,9 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Util {
   public static void sendTitleMessage(Player player, String message) {
@@ -74,5 +76,13 @@ public class Util {
             l.getY(),
             l.getZ() + zTeleportOffset
     );
+  }
+
+  public static HashMap<Player, Player> reversePlayerChain(HashMap<Player, Player> playerChain) {
+    HashMap<Player, Player> reverseChain = new HashMap<>();
+    for (Map.Entry<Player, Player> p : playerChain.entrySet()) {
+      reverseChain.put(p.getValue(), p.getKey());
+    }
+    return reverseChain;
   }
 }

@@ -20,24 +20,6 @@ public class BuildArea {
     world = vars.getWorld();
     numPlayers = vars.getNumPlayers();
   }
-
-//  public void generate() {
-//    for (int i = 0; i < numPlayers; i++) { generateBuildingStrip(i); }
-//  }
-
-//  private void generateBuildingStrip(int index) {
-//    for (int i = 0; i < vars.getNumBuildRounds(); i++) {
-//      Location hostLocation = host.getLocation();
-//      Location stripLocation = new Location(
-//              host.getWorld(),
-//              hostLocation.getBlockX() + (settings.getBuildAreaXOffset() * i),
-//              hostLocation.getBlockY(),
-//              hostLocation.getBlockZ() + (settings.getBuildAreaZOffset() * index)
-//      );
-//      generateBuildingCell(stripLocation);
-//    }
-//  }
-
   public void generateBuildingCell(Location hostLocation) {
     int padding = settings.getBuildAreaPadding();
     int width = settings.getBuildAreaWidth();
