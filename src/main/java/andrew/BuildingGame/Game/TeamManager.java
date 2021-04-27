@@ -28,7 +28,7 @@ public class TeamManager {
 
   private void createPlayerTeams(List<Player> participants) {
     for (Player p : participants) {
-      Team team = board.registerNewTeam("Team " + p.getDisplayName());
+      Team team = board.registerNewTeam(Integer.toString(p.getEntityId()));
       team.setOption(Team.Option.NAME_TAG_VISIBILITY, Team.OptionStatus.NEVER);
       team.addEntry(p.getName());
     }

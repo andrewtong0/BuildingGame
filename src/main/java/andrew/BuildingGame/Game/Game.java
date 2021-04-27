@@ -103,8 +103,9 @@ public class Game {
       }
     }
 
+    if (gameState == GameStateManager.GameState.INITPROMPT)  { Bukkit.broadcastMessage(ChatColor.GOLD + "Enter a prompt with /bgprompt"); }
     if (gameState == GameStateManager.GameState.BUILD) { Bukkit.broadcastMessage(ChatColor.GOLD + "Time to build!"); }
-    if (gameState == GameStateManager.GameState.GUESS) { Bukkit.broadcastMessage(ChatColor.GOLD + "Guess what this build is!"); }
+    if (gameState == GameStateManager.GameState.GUESS) { Bukkit.broadcastMessage(ChatColor.GOLD + "Guess what this build is!" + ChatColor.WHITE + " Use /bgprompt to guess!"); }
 
     if (isFinalRound) {
       teamManager.clearPlayerTeams();
@@ -173,6 +174,13 @@ public class Game {
 
     for (Player p : participants) {
       p.teleport(Util.offsetTeleport(settings, tpLocation));
+
+      if (tourIndices[1] == 0) {
+//        Util.sendCustomJsonMessage(p, JsonStrings.generateNextPromptRoundTitle(givenPrompt.getPromptString()));
+        p.sendMessage("Next prompt round: " + ChatColor.YELLOW + givenPrompt.getPromptString());
+        p.sendMessage("Idea by: " + ChatColor.RED + givenPrompt.getPromptGiver().getName());
+      }
+
       p.sendMessage(separator);
       p.sendMessage(buildTitle);
       p.sendMessage(promptGiver);

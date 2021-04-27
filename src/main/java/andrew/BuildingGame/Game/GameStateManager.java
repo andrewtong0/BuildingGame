@@ -29,13 +29,13 @@ public class GameStateManager {
   public static String getActionBarMsgForState(GameState currState, @Nullable BuildingPlot bp) {
     return switch (currState) {
       case INIT -> "";
-      case INITPROMPT -> ChatColor.GOLD + "Enter a prompt with /bgprompt";
+      case INITPROMPT -> "";
       case BUILD -> {
         assert bp != null;
         yield ChatColor.GOLD + "" + ChatColor.BOLD + "Your prompt is: " + ChatColor.DARK_GREEN + "" + ChatColor.BOLD +
                 "" + bp.getGivenPrompt().getPromptString();
       }
-      case GUESS -> ChatColor.GOLD + "Guess what this build is! Enter your guess with /bgprompt";
+      case GUESS -> "";
       default -> "";
     };
   }

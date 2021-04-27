@@ -1,16 +1,19 @@
 package andrew.BuildingGame.Game;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GameVars {
   Player host;
   World world;
   Location origin;
   List<Player> participants;
+  List<Material> buildRoundMaterials;
   int numPlayers;
   int numRounds;
   int numBuildRounds;
@@ -23,6 +26,8 @@ public class GameVars {
     origin = host.getLocation();
     numPlayers = participants.size();
     numRounds = calculateNumRounds();
+
+    buildRoundMaterials = selectBuildRoundMaterials();
   }
 
   public Player getHost() {
@@ -56,5 +61,27 @@ public class GameVars {
     } else {
       return 4;
     }
+  }
+  private List<Material> selectBuildRoundMaterials() {
+    Random random = new Random();
+    HashSet<Material> selectedMaterials = new HashSet<>();
+    Material[] terracottas = new Material[]{
+            Material.BLACK_TERRACOTTA, Material.BLUE_TERRACOTTA, Material.LIGHT_BLUE_TERRACOTTA,
+            Material.BROWN_TERRACOTTA, Material.GREEN_TERRACOTTA, Material.CYAN_TERRACOTTA,
+            Material.LIGHT_GRAY_TERRACOTTA, Material.LIME_TERRACOTTA, Material.MAGENTA_TERRACOTTA,
+            Material.ORANGE_TERRACOTTA, Material.PURPLE_TERRACOTTA, Material.RED_TERRACOTTA,
+            Material.WHITE_TERRACOTTA, Material.YELLOW_TERRACOTTA
+    };
+
+    while (selectedMaterials.size() < 3) {
+      int selectedTerracotta = ThreadLocalRandom.current().nextInt(0, terracottas.length);
+      selectedMaterials.add(terracottas[selectedTerracotta]);
+    }
+
+    return new ArrayList<>(selectedMaterials);
+  }
+
+  public List<Material> getBuildRoundMaterials() {
+    return buildRoundMaterials;
   }
 }

@@ -108,7 +108,7 @@ public class GameInit {
     for (int row = 0; row < plotGrid.length; row++) {
       for (int col = 0; col < plotGrid[0].length; col++) {
         Location curr = plotGrid[row][col];
-        buildArea.generateBuildingCell(curr);
+        buildArea.generateBuildingCell(curr, row);
       }
     }
   }

@@ -46,11 +46,13 @@ public class Timer {
     this.participantsData = participantsData;
     if (timerDurationSeconds != null) {
       timerBar = Util.createBossBarTimer(timerDurationSeconds);
-      currTime = settings.getBuildTimeSeconds();
+      currTime = timerDurationSeconds;
       ticksLeftInSecond = 20;
       Util.addPlayersToBossBar(vars.getParticipants(), timerBar);
+      runTimer(timerDurationSeconds);
+    } else {
+      runTimer(0);
     }
-    runTimer();
   }
 
   public void clearOldTimer() {
@@ -62,7 +64,7 @@ public class Timer {
     scheduler.cancelTasks(Main.main);
   }
 
-  private void runTimer() {
+  private void runTimer(int timerMaxTime) {
     scheduler.scheduleSyncDelayedTask(Main.main, () -> {
       for (Player p : vars.getParticipants()) {
         String actionBarMsg;
@@ -77,17 +79,17 @@ public class Timer {
       }
 
       if (ticksLeftInSecond == 0) {
-        tickSecond();
+        tickSecond(timerMaxTime);
         ticksLeftInSecond = 20;
       }
 
       ticksLeftInSecond--;
-      runTimer();
+      runTimer(timerMaxTime);
     }, 1L);
   }
 
-  private void tickSecond() {
+  private void tickSecond(int timerMaxTime) {
     if (currTime > 0) { currTime -= 1; }
-    if (timerBar != null) { Util.updateBossBarTimer(timerBar, currTime, settings.getBuildTimeSeconds()); }
+    if (timerBar != null) { Util.updateBossBarTimer(timerBar, currTime, timerMaxTime); }
   }
 }

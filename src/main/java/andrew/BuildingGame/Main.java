@@ -28,7 +28,7 @@ public class Main extends JavaPlugin {
     this.getCommand("bgtimer").setExecutor(new BGTimer());
 
     settings = new GameSettings(300, 20, 20, 20, 5,
-            Material.SNOW_BLOCK, Material.LIGHT_GRAY_TERRACOTTA, Material.GRAY_CONCRETE, true);
+            Material.SNOW_BLOCK, Material.LIGHT_GRAY_TERRACOTTA, Material.WHITE_CONCRETE, true);
   }
 
   public static void createGame() {

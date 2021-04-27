@@ -20,7 +20,8 @@ public class BuildArea {
     world = vars.getWorld();
     numPlayers = vars.getNumPlayers();
   }
-  public void generateBuildingCell(Location hostLocation) {
+
+  public void generateBuildingCell(Location hostLocation, int rowNum) {
     int padding = settings.getBuildAreaPadding();
     int width = settings.getBuildAreaWidth();
     int length = settings.getBuildAreaLength();
@@ -29,17 +30,20 @@ public class BuildArea {
     int playerY = hostLocation.getBlockY();
     int playerZ = hostLocation.getBlockZ();
 
-    generateBasePlatform(padding, width, length, playerX, playerY, playerZ);
+    generateBasePlatform(rowNum, padding, width, length, playerX, playerY, playerZ);
     generateWalls(padding, width, length, height, playerX, playerY, playerZ);
   }
 
-  private void generateBasePlatform(int padding, int width, int length, int playerX, int playerY, int playerZ) {
+  private void generateBasePlatform(int rowNum, int padding, int width, int length, int playerX, int playerY, int playerZ) {
     for (int x = 0; x < width + (padding * 2); x++) {
       for (int z = 0; z < length + (padding * 2); z++) {
         Block block = world.getBlockAt(playerX + x, playerY - 1, playerZ + z);
         if (x < width + padding && x >= padding && z < length + padding && z >= padding) {
           block.setType(settings.getBaseBlockMaterial());
-        } else { block.setType(settings.getPaddingBlockMaterial()); }
+        } else {
+//          block.setType(settings.getPaddingBlockMaterial());
+          block.setType(vars.getBuildRoundMaterials().get(rowNum));
+        }
       }
     }
   }

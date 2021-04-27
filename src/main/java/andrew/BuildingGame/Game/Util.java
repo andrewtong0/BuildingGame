@@ -85,4 +85,8 @@ public class Util {
     }
     return reverseChain;
   }
+
+  public static void sendCustomJsonMessage(Player p, String jsonString) {
+    p.getServer().dispatchCommand(p.getServer().getConsoleSender(), "tellraw " + p.getName() + " " + jsonString);
+  }
 }
