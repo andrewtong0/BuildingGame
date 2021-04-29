@@ -112,4 +112,10 @@ public class GameInit {
       }
     }
   }
+
+  public static void teleportPlayersToSpawn(GameVars vars) {
+    for (Player p : vars.getParticipants()) {
+      p.teleport(vars.getSpawnTeleport());
+    }
+  }
 }

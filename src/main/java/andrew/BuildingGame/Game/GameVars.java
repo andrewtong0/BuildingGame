@@ -17,6 +17,7 @@ public class GameVars {
   int numPlayers;
   int numRounds;
   int numBuildRounds;
+  Location spawnTeleport;
 
   public GameVars(Player host, World world, List<Player> participants) {
     this.host = host;
@@ -28,6 +29,9 @@ public class GameVars {
     numRounds = calculateNumRounds();
 
     buildRoundMaterials = selectBuildRoundMaterials();
+
+    // TODO: Allow for dynamic spawnTeleport location setting
+    spawnTeleport = new Location(world, 112, 64, -27);
   }
 
   public Player getHost() {
@@ -42,6 +46,7 @@ public class GameVars {
   public List<Player> getParticipants() {
     return participants;
   }
+  public Location getSpawnTeleport() { return spawnTeleport; }
   public int getNumPlayers() {
     return numPlayers;
   }
@@ -57,13 +62,12 @@ public class GameVars {
   }
   private int calculateNumRounds() {
     if (numPlayers > 4) {
-      return 7;
+      return 6;
     } else {
       return 4;
     }
   }
   private List<Material> selectBuildRoundMaterials() {
-    Random random = new Random();
     HashSet<Material> selectedMaterials = new HashSet<>();
     Material[] terracottas = new Material[]{
             Material.BLACK_TERRACOTTA, Material.BLUE_TERRACOTTA, Material.LIGHT_BLUE_TERRACOTTA,

@@ -9,7 +9,7 @@ import java.util.*;
 
 public class BGSettings implements TabExecutor {
   private final Set<String> attributesSet = new HashSet<>(Arrays.asList(
-          "buildTime", "buildAreaWidth", "buildAreaLength", "buildAreaHeight", "buildAreaPadding"));
+          "buildTime", "buildAreaWidth", "buildAreaLength", "buildAreaHeight", "buildAreaPadding", "buildFirstPrompt"));
 
   public BGSettings(Main plugin) {
     plugin.getCommand("bgsettings").setExecutor((CommandExecutor) this);
@@ -70,6 +70,7 @@ public class BGSettings implements TabExecutor {
       case "buildAreaLength" -> { settings.setBuildAreaLength(val); }
       case "buildAreaHeight" -> { settings.setBuildAreaHeight(val); }
       case "buildAreaPadding" -> { settings.setBuildAreaPadding(val); }
+      case "buildFirstPrompt" -> { settings.setBuildOwnFirstPrompt(val == 1); }
     }
 
     sender.sendMessage(ChatColor.GREEN + attr + ": " + initialVal + " -> " + val);
@@ -83,6 +84,7 @@ public class BGSettings implements TabExecutor {
       case "buildAreaLength" -> { val = settings.getBuildAreaLength(); }
       case "buildAreaHeight" -> { val = settings.getBuildAreaHeight(); }
       case "buildAreaPadding" -> { val = settings.getBuildAreaPadding(); }
+      case "buildFirstPrompt" -> { val = settings.getBuildOwnFirstPrompt() ? 1 : 0; }
     }
     return val;
   }
@@ -123,6 +125,10 @@ public class BGSettings implements TabExecutor {
           validParams.add("3");
           validParams.add("5");
           validParams.add("7");
+        }
+        case "buildFirstPrompt" -> {
+          validParams.add("0");
+          validParams.add("1");
         }
       }
     }

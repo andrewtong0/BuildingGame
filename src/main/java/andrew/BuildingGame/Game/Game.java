@@ -69,7 +69,10 @@ public class Game {
     return settings;
   }
 
+  public GameVars getVars() { return vars; }
+
   public void startGame() {
+    GameInit.teleportPlayersToSpawn(vars);
     Util.sendCustomJsonMessage(participants, JsonStrings.generateIntroText());
     timer.startNextTimer(plotsData, participantsData, gameState, null);
   }
@@ -123,7 +126,12 @@ public class Game {
     // TODO: Enable assigning self own prompt
     if (gameState == GameStateManager.GameState.INITPROMPT) {
       Player playerGivingPrompt = pd.getPlayer();
-      Player playerReceivingPrompt = playerChain.get(playerGivingPrompt);
+      Player playerReceivingPrompt;
+      if (settings.getBuildOwnFirstPrompt()) {
+        playerReceivingPrompt = playerGivingPrompt;
+      } else {
+        playerReceivingPrompt = playerChain.get(playerGivingPrompt);
+      }
       PlayerData pdOfReceivingPlayer = participantsData.get(playerReceivingPrompt);
       BuildingPlot receivingPlayerPlot = plotsData.get(pdOfReceivingPlayer.getLocationAtIndex(0));
       Prompt initPrompt = new Prompt(playerGivingPrompt, currPromptStrings.get(playerGivingPrompt));
@@ -177,8 +185,6 @@ public class Game {
               currPhase, totalPhases, builderPrompt, builder, prompter, guesser, guess
       ));
     }
-
-
 
     // Move to the next cell if possible, otherwise reset
     tourIndices[1] = (tourIndices[1] + 1) % vars.getNumBuildRounds();

@@ -98,7 +98,7 @@ public class Timer {
 
   public void printNewBuildTextWithDelay(int currPhase, int totalPhases, String builderPrompt, String builder,
                                          String prompter, String guesser, String guess, List<Player> participants) {
-    messageDelay = 3;
+    messageDelay = 5;
     ticksLeftInSecond = 20;
     stopTimer();
     clearOldTimer();
