@@ -70,6 +70,7 @@ public class Game {
   }
 
   public void startGame() {
+    Util.sendCustomJsonMessage(participants, JsonStrings.generateIntroText());
     timer.startNextTimer(plotsData, participantsData, gameState, null);
   }
 
@@ -103,14 +104,13 @@ public class Game {
       }
     }
 
-    if (gameState == GameStateManager.GameState.INITPROMPT)  { Bukkit.broadcastMessage(ChatColor.GOLD + "Enter a prompt with /bgprompt"); }
-    if (gameState == GameStateManager.GameState.BUILD) { Bukkit.broadcastMessage(ChatColor.GOLD + "Time to build!"); }
-    if (gameState == GameStateManager.GameState.GUESS) { Bukkit.broadcastMessage(ChatColor.GOLD + "Guess what this build is!" + ChatColor.WHITE + " Use /bgprompt to guess!"); }
+    if (gameState == GameStateManager.GameState.INITPROMPT)  { Util.sendCustomJsonMessage(participants, JsonStrings.generateInitialPromptText()); }
+    if (gameState == GameStateManager.GameState.BUILD) { Util.sendMessageToPlayers(participants, ChatColor.GOLD + "Time to build!"); }
+    if (gameState == GameStateManager.GameState.GUESS) { Util.sendCustomJsonMessage(participants, JsonStrings.generateGuessText()); }
 
     if (isFinalRound) {
       teamManager.clearPlayerTeams();
-      Bukkit.broadcastMessage(ChatColor.GOLD + "Building Phase Complete!");
-      Bukkit.broadcastMessage(ChatColor.GOLD + "Time to Review the Builds!");
+      Util.sendCustomJsonMessage(participants, JsonStrings.generateBuildingPhaseCompleteText());
     }
     BGPrompt.clearPrompts();
   }
@@ -153,40 +153,32 @@ public class Game {
     if (tourIndices[0] >= vars.getNumPlayers()) { return; }
 
     // Execute teleportation
-    String promptStringColour = ChatColor.BOLD + "" + ChatColor.YELLOW;
-    ChatColor builderNameColour = ChatColor.GREEN;
-    ChatColor promptNameColour = ChatColor.RED;
-    ChatColor guesserNameColour = ChatColor.DARK_GREEN;
-    ChatColor guessStringColour = ChatColor.GOLD;
-    ChatColor regularColour = ChatColor.WHITE;
-
     Location tpLocation = plotGrid[tourIndices[1]][tourIndices[0]];
+    for (Player p : participants) { p.teleport(Util.offsetTeleport(settings, tpLocation)); }
+
+    // Generate and send messages
     BuildingPlot plotData = plotsData.get(tpLocation);
     Prompt givenPrompt = plotData.getGivenPrompt();
     Prompt guessedPrompt = plotData.getGuessedPrompt();
-    String separator = ChatColor.STRIKETHROUGH + StringUtils.repeat(" ", 80);
-    String buildTitle = "\"" + promptStringColour + givenPrompt.getPromptString() + regularColour + "\"" + " built by "
-            + builderNameColour + plotData.getBuilder().getName() + "\n";
-    String promptGiver = regularColour + "Prompt given by " + promptNameColour +
-            givenPrompt.getPromptGiver().getName() + "\n";
-    String guessString = guesserNameColour + guessedPrompt.getPromptGiver().getName() + "'s" + regularColour +
-            " guess: " + guessStringColour + guessedPrompt.getPromptString() + "\n";
+    int currPhase = tourIndices[1] + 1;
+    int totalPhases = vars.getNumBuildRounds();
+    String builderPrompt = givenPrompt.getPromptString();
+    String builder = plotData.getBuilder().getName();
+    String prompter = givenPrompt.getPromptGiver().getName();
+    String guesser = guessedPrompt.getPromptGiver().getName();
+    String guess = guessedPrompt.getPromptString();
 
-    for (Player p : participants) {
-      p.teleport(Util.offsetTeleport(settings, tpLocation));
-
-      if (tourIndices[1] == 0) {
-//        Util.sendCustomJsonMessage(p, JsonStrings.generateNextPromptRoundTitle(givenPrompt.getPromptString()));
-        p.sendMessage("Next prompt round: " + ChatColor.YELLOW + givenPrompt.getPromptString());
-        p.sendMessage("Idea by: " + ChatColor.RED + givenPrompt.getPromptGiver().getName());
-      }
-
-      p.sendMessage(separator);
-      p.sendMessage(buildTitle);
-      p.sendMessage(promptGiver);
-      p.sendMessage(guessString);
-      p.sendMessage(separator);
+    if (tourIndices[1] == 0) {
+      timer.printNewBuildTextWithDelay(
+              currPhase, totalPhases, builderPrompt, builder, prompter, guesser, guess, participants
+      );
+    } else {
+      Util.sendCustomJsonMessage(participants,JsonStrings.generateViewingPhaseText(
+              currPhase, totalPhases, builderPrompt, builder, prompter, guesser, guess
+      ));
     }
+
+
 
     // Move to the next cell if possible, otherwise reset
     tourIndices[1] = (tourIndices[1] + 1) % vars.getNumBuildRounds();

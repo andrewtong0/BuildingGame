@@ -1,5 +1,7 @@
 package andrew.BuildingGame.Commands;
 
+import andrew.BuildingGame.Game.JsonStrings;
+import andrew.BuildingGame.Game.Util;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -18,8 +20,8 @@ public class BGPrompt implements CommandExecutor {
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
     Player player = (Player) sender;
     String promptString = String.join(" ", args);
-    if (prompts.containsKey(player)) { sender.sendMessage(ChatColor.GOLD + "Replaced prompt with: " + ChatColor.WHITE + promptString); }
-    else { sender.sendMessage(ChatColor.GOLD + "Added prompt: " + ChatColor.WHITE + promptString); }
+    if (prompts.containsKey(player)) { Util.sendCustomJsonMessage(player, JsonStrings.generateUpdatedPromptText(promptString)); }
+    else { Util.sendCustomJsonMessage(player, JsonStrings.generateAddedPromptText(promptString)); }
     prompts.put(player, promptString);
 
     if (BGReady.getParticipants().size() == prompts.size()) {

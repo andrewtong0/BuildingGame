@@ -86,7 +86,15 @@ public class Util {
     return reverseChain;
   }
 
+  public static void sendMessageToPlayers(List<Player> participants, String message) {
+    for (Player p : participants) { p.sendMessage(message); }
+  }
+
   public static void sendCustomJsonMessage(Player p, String jsonString) {
     p.getServer().dispatchCommand(p.getServer().getConsoleSender(), "tellraw " + p.getName() + " " + jsonString);
+  }
+
+  public static void sendCustomJsonMessage(List<Player> participants, String jsonString) {
+    for (Player p : participants) { sendCustomJsonMessage(p, jsonString); }
   }
 }

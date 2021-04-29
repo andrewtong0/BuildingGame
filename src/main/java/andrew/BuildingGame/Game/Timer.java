@@ -8,6 +8,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Timer {
   GameSettings settings;
@@ -20,6 +22,7 @@ public class Timer {
   HashMap<Player, PlayerData> participantsData;
   int ticksLeftInSecond;
   int currTime;
+  int messageDelay;
 
   public Timer(GameSettings settings, GameVars vars) {
     this.settings = settings;
@@ -91,5 +94,37 @@ public class Timer {
   private void tickSecond(int timerMaxTime) {
     if (currTime > 0) { currTime -= 1; }
     if (timerBar != null) { Util.updateBossBarTimer(timerBar, currTime, timerMaxTime); }
+  }
+
+  public void printNewBuildTextWithDelay(int currPhase, int totalPhases, String builderPrompt, String builder,
+                                         String prompter, String guesser, String guess, List<Player> participants) {
+    messageDelay = 3;
+    ticksLeftInSecond = 20;
+    stopTimer();
+    clearOldTimer();
+
+    Util.sendCustomJsonMessage(participants, JsonStrings.generateNewBuildRoundText(builderPrompt, prompter));
+
+    tickNewBuildText(currPhase, totalPhases, builderPrompt, builder, prompter, guesser, guess, participants);
+  }
+
+  private void tickNewBuildText(int currPhase, int totalPhases, String builderPrompt, String builder,
+                                String prompter, String guesser, String guess, List<Player> participants) {
+    scheduler.scheduleSyncDelayedTask(Main.main, () -> {
+      if (ticksLeftInSecond <= 0) {
+        messageDelay--;
+        ticksLeftInSecond = 20;
+      }
+
+      if (messageDelay == 0) {
+        Util.sendCustomJsonMessage(participants,JsonStrings.generateViewingPhaseText(
+                currPhase, totalPhases, builderPrompt, builder, prompter, guesser, guess
+        ));
+        messageDelay = -1;
+      }
+
+      ticksLeftInSecond--;
+      tickNewBuildText(currPhase, totalPhases, builderPrompt, builder, prompter, guesser, guess, participants);
+    }, 1L);
   }
 }
