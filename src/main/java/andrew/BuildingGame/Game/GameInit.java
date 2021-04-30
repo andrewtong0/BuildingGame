@@ -3,8 +3,10 @@ package andrew.BuildingGame.Game;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.scoreboard.Scoreboard;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +15,14 @@ import java.util.Random;
 public class GameInit {
   public static void resetPlayerState(Player p) {
     // Change to creative
-    p.setGameMode(GameMode.CREATIVE);
+    p.setGameMode(GameMode.ADVENTURE);
+    p.setInvulnerable(true);
+//    JSONParser parser = new JSONParser();
+//    try {
+//      JSONObject jsonSettings = (JSONObject) parser.parse(new FileReader("../Data/settings.json"));
+//      JSONObject fun = jsonSettings.
+//
+//    } catch (Exception ignored) {}
   }
 
   public static Location[][] initPlotGrid(GameSettings settings, GameVars vars) {

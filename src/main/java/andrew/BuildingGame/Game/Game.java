@@ -2,10 +2,7 @@ package andrew.BuildingGame.Game;
 
 import andrew.BuildingGame.Commands.BGPrompt;
 import net.md_5.bungee.api.ChatMessageType;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.StringUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
@@ -101,6 +98,7 @@ public class Game {
 
     if (!isFinalRound && gameState != GameStateManager.GameState.INIT && gameState != GameStateManager.GameState.INITPROMPT) {
       for (Player p: participants) {
+        p.setGameMode(GameMode.CREATIVE);
         p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));
         Location teleportLocation = participantsData.get(p).path.get(roundNumber);
         p.teleport(Util.offsetTeleport(settings, teleportLocation));
@@ -114,6 +112,10 @@ public class Game {
     if (isFinalRound) {
       teamManager.clearPlayerTeams();
       Util.sendCustomJsonMessage(participants, JsonStrings.generateBuildingPhaseCompleteText());
+      for (Player p : participants) {
+        p.setInvulnerable(false);
+      }
+      saveAllPlotData();
     }
     BGPrompt.clearPrompts();
   }
@@ -151,6 +153,16 @@ public class Game {
         Prompt initPrompt = new Prompt(currPlayer, currPromptStrings.get(currPlayer));
         receivingPlayerPlot.setGivenPrompt(initPrompt);
         // TODO: set guessed prompt as the prompt for the next location, should replicate code above
+      }
+    }
+  }
+
+  private void saveAllPlotData() {
+    for (int i = 0; i < plotGrid.length; i++) {
+      for (int j = 0; j < plotGrid[0].length; j++) {
+        BuildingPlot bp = plotsData.get(plotGrid[i][j]);
+        SaveBuildingPlotData saveBpd = new SaveBuildingPlotData();
+        saveBpd.savePlotData(bp);
       }
     }
   }

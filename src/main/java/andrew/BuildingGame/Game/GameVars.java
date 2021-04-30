@@ -31,7 +31,7 @@ public class GameVars {
     buildRoundMaterials = selectBuildRoundMaterials();
 
     // TODO: Allow for dynamic spawnTeleport location setting
-    spawnTeleport = new Location(world, 112, 64, -27);
+    spawnTeleport = new Location(world, 105, 64, -27);
   }
 
   public Player getHost() {
