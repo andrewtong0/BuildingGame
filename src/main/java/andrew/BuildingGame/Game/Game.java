@@ -69,6 +69,7 @@ public class Game {
   public GameVars getVars() { return vars; }
 
   public void startGame() {
+    vars.getHost().getWorld().setTime(18000);
     GameInit.teleportPlayersToSpawn(vars);
     Util.sendCustomJsonMessage(participants, JsonStrings.generateIntroText());
     timer.startNextTimer(plotsData, participantsData, gameState, null);
@@ -97,6 +98,7 @@ public class Game {
     timer.startNextTimer(plotsData, participantsData, gameState, null);
 
     if (!isFinalRound && gameState != GameStateManager.GameState.INIT && gameState != GameStateManager.GameState.INITPROMPT) {
+      vars.getHost().getWorld().setTime(1000);
       for (Player p: participants) {
         p.setGameMode(GameMode.CREATIVE);
         p.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, 60, 1));

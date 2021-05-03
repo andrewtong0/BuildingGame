@@ -28,7 +28,7 @@ public class Main extends JavaPlugin {
     this.getCommand("bgtimer").setExecutor(new BGTimer());
     this.getCommand("bgadmin").setExecutor(new BGMusic());
 
-    settings = new GameSettings(300, 20, 20, 20, 5,
+    settings = new GameSettings(300, 20, 20, 30, 5,
             Material.SNOW_BLOCK, Material.LIGHT_GRAY_TERRACOTTA, Material.WHITE_CONCRETE, true);
   }
 

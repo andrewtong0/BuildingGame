@@ -48,14 +48,8 @@ public class SaveBuildingPlotData {
         String prompter = constructPrompterString(bp);
         String guesser = constructGuesserString(bp);
 
-        List<String> pages = new ArrayList<>();
-        pages.add(gameDate);
-        pages.add(title);
-        pages.add(prompter);
-        pages.add(guesser);
-
         bm.setTitle("Building Game");
-        bm.setPages(pages);
+        bm.setPages(gameDate + "\n" + title + "\n" + prompter + "\n" + guesser);
         bm.setAuthor(bp.getBuilder().getName());
 
         writtenBook.setItemMeta(bm);
@@ -65,17 +59,17 @@ public class SaveBuildingPlotData {
     private String constructTitleString(BuildingPlot bp) {
         String buildTitle = bp.getGivenPrompt().getPromptString();
         String builderName = bp.getBuilder().getName();
-        return buildTitle + " built by " + builderName;
+        return buildTitle + " built by " + builderName + "\n";
     }
 
     private String constructPrompterString(BuildingPlot bp) {
         String prompterName = bp.getGivenPrompt().getPromptGiver().getName();
-        return "Prompt given by " + prompterName;
+        return "Prompt given by " + prompterName + "\n";
     }
 
     private String constructGuesserString(BuildingPlot bp) {
         String guesserGuess = bp.getGuessedPrompt().getPromptString();
         String guesserName = bp.getGuessedPrompt().getPromptGiver().getName();
-        return guesserGuess + "'s guess: " + guesserName;
+        return guesserName + "'s guess: " + guesserGuess;
     }
 }
