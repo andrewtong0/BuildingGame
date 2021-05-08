@@ -69,7 +69,8 @@ public class Util {
 
   public static Location offsetTeleport(GameSettings settings, Location l) {
     int xTeleportOffset = settings.getBuildAreaWidth() / 2 + settings.getBuildAreaPadding();
-    int zTeleportOffset = settings.getBuildAreaLength() / 2 + settings.getBuildAreaPadding();
+    int halfPadding = settings.getBuildAreaPadding() / 2;
+    int zTeleportOffset = halfPadding > 0 ? halfPadding : 1;
     return new Location(
             l.getWorld(),
             l.getX() + xTeleportOffset,

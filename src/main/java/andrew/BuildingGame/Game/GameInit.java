@@ -3,6 +3,8 @@ package andrew.BuildingGame.Game;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -13,14 +15,23 @@ import java.util.List;
 import java.util.Random;
 
 public class GameInit {
-  public static void resetPlayerState(Player p) {
+  public static void preparePlayerStates(Player p) {
     // Change to creative
     p.setGameMode(GameMode.ADVENTURE);
     p.setInvulnerable(true);
+
+// https://howtodoinjava.com/java/library/json-simple-read-write-json-examples/
 //    JSONParser parser = new JSONParser();
-//    try {
-//      JSONObject jsonSettings = (JSONObject) parser.parse(new FileReader("../Data/settings.json"));
-//      JSONObject fun = jsonSettings.
+//    try (FileReader reader = new FileReader("employees.json")) {
+//      JSONObject obj = (JSONObject) parser.parse(reader);
+//
+//      JSONObject funObj = (JSONObject) obj.get("fun");
+//      JSONArray funObj_itemArray = (JSONArray) funObj.get("spawnRoom_items");
+//
+//      for (Object i : funObj_itemArray) {
+//        JSONObject item = (JSONObject) i;
+//      }
+//      ItemStack itemStack = new ItemStack()
 //
 //    } catch (Exception ignored) {}
   }

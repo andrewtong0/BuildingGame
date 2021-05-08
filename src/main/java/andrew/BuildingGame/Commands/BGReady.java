@@ -29,4 +29,6 @@ public class BGReady implements CommandExecutor{
   }
 
   public static List<Player> getParticipants() { return readyPlayers; }
+
+  public static void unreadyAllParticipants() { readyPlayers.clear(); }
 }

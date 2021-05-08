@@ -7,3 +7,4 @@ target/
 resourcePack/
 settings.json
 pom.xml
+*.iml

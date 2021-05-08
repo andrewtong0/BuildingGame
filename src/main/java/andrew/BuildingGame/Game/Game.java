@@ -1,9 +1,7 @@
 package andrew.BuildingGame.Game;
 
 import andrew.BuildingGame.Commands.BGPrompt;
-import net.md_5.bungee.api.ChatMessageType;
 import org.bukkit.*;
-import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.StringUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -32,6 +30,7 @@ public class Game {
   int[] tourIndices; // plotGrid indices we are currently in, empty uninitialized
 
   public Game(GameSettings settings, GameVars vars) {
+
     // Static Data Initialization
     this.settings = settings;
     this.vars = vars;
@@ -39,6 +38,11 @@ public class Game {
     this.world = vars.getWorld();
     this.participants = vars.getParticipants();
     plotGrid = GameInit.initPlotGrid(settings, vars);
+
+    if (validateGame() != null) {
+      // TODO: Add feedback here when game fails to start
+//      return;
+    }
 
     // Dynamic Data Initialization
     timer = new Timer(settings, vars);
@@ -51,11 +55,12 @@ public class Game {
     plotsData = GameInit.initPlotsData(plotGrid);
 
     playerChain = GameInit.createPlayerChain(participants);
-    HashMap<Player, Player> reversePlayerChain = Util.reversePlayerChain(playerChain);
-    HashMap<Player, List<Location>> playerPaths = GameInit.generatePlayerPaths(vars, plotGrid, reversePlayerChain);
+    HashMap<Player, List<Location>> playerPaths = GameInit.generatePlayerPaths(
+            vars, plotGrid, Util.reversePlayerChain(playerChain)
+    );
     teamManager.resetPlayerTeams();
     for (Player p : participants) {
-      GameInit.resetPlayerState(p);
+      GameInit.preparePlayerStates(p);
       participantsData.put(p, new PlayerData(p, playerPaths.get(p)));
     }
     this.gameState = GameStateManager.GameState.INIT;
@@ -67,6 +72,11 @@ public class Game {
   }
 
   public GameVars getVars() { return vars; }
+
+  private String validateGame() {
+    if (participants.size() < 4) return "Not enough players ready to start game (minimum: 4, current: " + participants.size() + ")";
+    return null;
+  }
 
   public void startGame() {
     vars.getHost().getWorld().setTime(18000);
@@ -112,11 +122,8 @@ public class Game {
     if (gameState == GameStateManager.GameState.GUESS) { Util.sendCustomJsonMessage(participants, JsonStrings.generateGuessText()); }
 
     if (isFinalRound) {
-      teamManager.clearPlayerTeams();
       Util.sendCustomJsonMessage(participants, JsonStrings.generateBuildingPhaseCompleteText());
-      for (Player p : participants) {
-        p.setInvulnerable(false);
-      }
+      gameCleanup();
       saveAllPlotData();
     }
     BGPrompt.clearPrompts();
@@ -127,7 +134,6 @@ public class Game {
   }
 
   private void updatePlotData(PlayerData pd, BuildingPlot bp, boolean isFinalRound) {
-    // TODO: Enable assigning self own prompt
     if (gameState == GameStateManager.GameState.INITPROMPT) {
       Player playerGivingPrompt = pd.getPlayer();
       Player playerReceivingPrompt;
@@ -143,27 +149,26 @@ public class Game {
     } else if (gameState == GameStateManager.GameState.BUILD) {
       bp.setBuilder(pd.getPlayer());
     } else if (gameState == GameStateManager.GameState.GUESS) {
-      // TODO: Combine this with INITPROMPT but set the guess to only be for GameState.GUESS
       Player currPlayer = pd.getPlayer();
       Prompt guess = new Prompt(currPlayer, currPromptStrings.get(currPlayer));
       plotsData.get(pd.getLocation()).setGuessedPrompt(guess);
 
       if (!isFinalRound) {
+        // TODO: Reduce code duplication with INITPROMPT
         Player playerReceivingPrompt = playerChain.get(currPlayer);
         PlayerData pdOfReceivingPlayer = participantsData.get(playerReceivingPrompt);
         BuildingPlot receivingPlayerPlot = plotsData.get(pdOfReceivingPlayer.getLocationAtIndex(roundNumber));
         Prompt initPrompt = new Prompt(currPlayer, currPromptStrings.get(currPlayer));
         receivingPlayerPlot.setGivenPrompt(initPrompt);
-        // TODO: set guessed prompt as the prompt for the next location, should replicate code above
       }
     }
   }
 
   private void saveAllPlotData() {
+    SaveBuildingPlotData saveBpd = new SaveBuildingPlotData();
     for (int i = 0; i < plotGrid.length; i++) {
       for (int j = 0; j < plotGrid[0].length; j++) {
         BuildingPlot bp = plotsData.get(plotGrid[i][j]);
-        SaveBuildingPlotData saveBpd = new SaveBuildingPlotData();
         saveBpd.savePlotData(bp);
       }
     }
@@ -206,5 +211,13 @@ public class Game {
     if (tourIndices[1] == 0) {
       tourIndices[0]++;
     }
+  }
+
+  private void gameCleanup() {
+    teamManager.clearPlayerTeams();
+    for (Player p : participants) {
+      p.setInvulnerable(false);
+    }
+//    BGReady.unreadyAllParticipants();
   }
 }
