@@ -90,10 +90,11 @@ public class Game {
   }
 
   public void advanceGamePhase() {
-    if (gameState != GameStateManager.GameState.INIT && gameState != GameStateManager.GameState.INITPROMPT) {
+    if (isNeitherInitNorInitPromptState()) {
       roundNumber++;
     }
-    boolean isFinalRound = roundNumber >= vars.getNumRounds();
+    boolean isFinalRound = isFinalRound(roundNumber);
+    boolean isFinalBuildingRound = isFinalBuildingRound();
 
     // Update participant and plot data and start next timer based on them
     currPromptStrings = BGPrompt.getPrompts();
@@ -120,6 +121,10 @@ public class Game {
     if (gameState == GameStateManager.GameState.INITPROMPT)  { Util.sendCustomJsonMessage(participants, JsonStrings.generateInitialPromptText()); }
     if (gameState == GameStateManager.GameState.BUILD) { Util.sendMessageToPlayers(participants, ChatColor.GOLD + "Time to build!"); }
     if (gameState == GameStateManager.GameState.GUESS) { Util.sendCustomJsonMessage(participants, JsonStrings.generateGuessText()); }
+
+    if (isFinalBuildingRound) {
+      Util.sendCustomJsonMessage(participants, JsonStrings.generateFinalBuildingRoundText());
+    }
 
     if (isFinalRound) {
       Util.sendCustomJsonMessage(participants, JsonStrings.generateBuildingPhaseCompleteText());
@@ -219,5 +224,21 @@ public class Game {
       p.setInvulnerable(false);
     }
 //    BGReady.unreadyAllParticipants();
+  }
+
+  private Boolean isBuildingRound() {
+    return roundNumber % 2 == 0 && isNeitherInitNorInitPromptState() && !isFinalRound(roundNumber);
+  }
+
+  private Boolean isFinalBuildingRound() {
+    return isBuildingRound() && isFinalRound(roundNumber + 2);
+  }
+
+  private Boolean isFinalRound(int roundNumber) {
+    return roundNumber >= vars.getNumRounds();
+  }
+
+  private Boolean isNeitherInitNorInitPromptState() {
+    return gameState != GameStateManager.GameState.INIT && gameState != GameStateManager.GameState.INITPROMPT;
   }
 }

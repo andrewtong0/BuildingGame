@@ -55,8 +55,8 @@ The game follows a DFA. It can be helpful to know the game flow as a host to und
 
 - `INIT`: The game state after `/bgstart` is called.
     - `INIT` always leads into `INITPROMPT`
-- `INITPRMOPT`: The game state where players enter their initial prompts
-    - `INITPRMOPT` always leads into `BUILD`
+- `INITPROMPT`: The game state where players enter their initial prompts
+    - `INITPROMPT` always leads into `BUILD`
 - `BUILD`: The game state where players build their assigned prompts
     - `BUILD` always leads into `GUESS`
 - `GUESS`: The game state where players guess what the build they are looking at is
