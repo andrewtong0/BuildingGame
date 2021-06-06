@@ -27,6 +27,6 @@ commands:
   bgtimer:
     description: Starts a new timer with the specified number of seconds
     usage: /bgtimer <duration>
-  bgadmin:
-    description: Used for administrating a game
-    usage: /bgadmin <settings>
+  bgmusic:
+    description: Play songs during a game
+    usage: /bgmusic <settings>

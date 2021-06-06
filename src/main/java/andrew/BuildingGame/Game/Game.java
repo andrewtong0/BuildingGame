@@ -28,6 +28,7 @@ public class Game {
   GameStateManager.GameState gameState;
   int roundNumber;  // Determines index in PlayerData path array to teleport players
   int[] tourIndices; // plotGrid indices we are currently in, empty uninitialized
+  boolean isFinalRound;
 
   public Game(GameSettings settings, GameVars vars) {
 
@@ -65,6 +66,7 @@ public class Game {
     }
     this.gameState = GameStateManager.GameState.INIT;
     roundNumber = 0;
+    isFinalRound = false;
   }
 
   public GameSettings getSettings() {
@@ -89,25 +91,24 @@ public class Game {
     timer.startNextTimer(plotsData, participantsData, gameState, numSeconds);
   }
 
-  public void advanceGamePhase() {
-    if (isGameInProgress()) {
-      roundNumber++;
-    }
-    boolean isFinalRound = isFinalRound(roundNumber);
+  private void actionsBeforeNextState() {
+    if (isGameInProgress()) { roundNumber++; }
+    isFinalRound = isFinalRound(roundNumber);
 
     // Update participant and plot data and start next timer based on them
     currPromptStrings = BGPrompt.getPrompts();
     for (Player p: participants) {
       PlayerData data = participantsData.get(p);
       BuildingPlot plot = plotsData.get(data.getLocation());
-      updatePlotData(data, plot, isFinalRound);
+      updatePlotData(data, plot);
       if (!isFinalRound) { updateParticipantData(data); }
     }
+  }
 
-    gameState = GameStateManager.getNextState(gameState, isFinalRound);
+  private void actionsAfterNextState() {
     timer.startNextTimer(plotsData, participantsData, gameState, null);
 
-    if (!isFinalRound && gameState != GameStateManager.GameState.INIT && gameState != GameStateManager.GameState.INITPROMPT) {
+    if (!isFinalRound && isGameInProgress()) {
       vars.getHost().getWorld().setTime(1000);
       for (Player p: participants) {
         p.setGameMode(GameMode.CREATIVE);
@@ -120,7 +121,6 @@ public class Game {
     if (gameState == GameStateManager.GameState.INITPROMPT)  { Util.sendCustomJsonMessage(participants, JsonStrings.generateInitialPromptText()); }
     if (gameState == GameStateManager.GameState.BUILD) { Util.sendMessageToPlayers(participants, ChatColor.GOLD + "Time to build!"); }
     if (gameState == GameStateManager.GameState.GUESS) { Util.sendCustomJsonMessage(participants, JsonStrings.generateGuessText()); }
-
     if (isFinalBuildingRound()) { Util.sendCustomJsonMessage(participants, JsonStrings.generateFinalBuildingRoundText()); }
 
     if (isFinalRound) {
@@ -131,11 +131,24 @@ public class Game {
     BGPrompt.clearPrompts();
   }
 
+  public void advanceGamePhase() {
+    actionsBeforeNextState();
+    gameState = GameStateManager.getNextState(gameState, isFinalRound);
+    actionsAfterNextState();
+  }
+
   private void updateParticipantData(PlayerData pd) {
     pd.setLocation(pd.getLocationAtIndex(roundNumber));
   }
 
-  private void updatePlotData(PlayerData pd, BuildingPlot bp, boolean isFinalRound) {
+  private void updatePlotDataHelper(Player playerGivingPrompt, Player playerReceivingPrompt, int index) {
+    PlayerData pdOfReceivingPlayer = participantsData.get(playerReceivingPrompt);
+    BuildingPlot receivingPlayerPlot = plotsData.get(pdOfReceivingPlayer.getLocationAtIndex(index));
+    Prompt initPrompt = new Prompt(playerGivingPrompt, currPromptStrings.get(playerGivingPrompt));
+    receivingPlayerPlot.setGivenPrompt(initPrompt);
+  }
+
+  private void updatePlotData(PlayerData pd, BuildingPlot bp) {
     if (gameState == GameStateManager.GameState.INITPROMPT) {
       Player playerGivingPrompt = pd.getPlayer();
       Player playerReceivingPrompt;
@@ -145,9 +158,7 @@ public class Game {
         playerReceivingPrompt = playerChain.get(playerGivingPrompt);
       }
       PlayerData pdOfReceivingPlayer = participantsData.get(playerReceivingPrompt);
-      BuildingPlot receivingPlayerPlot = plotsData.get(pdOfReceivingPlayer.getLocationAtIndex(0));
-      Prompt initPrompt = new Prompt(playerGivingPrompt, currPromptStrings.get(playerGivingPrompt));
-      receivingPlayerPlot.setGivenPrompt(initPrompt);
+      updatePlotDataHelper(playerGivingPrompt, playerReceivingPrompt, 0);
     } else if (gameState == GameStateManager.GameState.BUILD) {
       bp.setBuilder(pd.getPlayer());
     } else if (gameState == GameStateManager.GameState.GUESS) {
@@ -156,12 +167,8 @@ public class Game {
       plotsData.get(pd.getLocation()).setGuessedPrompt(guess);
 
       if (!isFinalRound) {
-        // TODO: Reduce code duplication with INITPROMPT
         Player playerReceivingPrompt = playerChain.get(currPlayer);
-        PlayerData pdOfReceivingPlayer = participantsData.get(playerReceivingPrompt);
-        BuildingPlot receivingPlayerPlot = plotsData.get(pdOfReceivingPlayer.getLocationAtIndex(roundNumber));
-        Prompt initPrompt = new Prompt(currPlayer, currPromptStrings.get(currPlayer));
-        receivingPlayerPlot.setGivenPrompt(initPrompt);
+        updatePlotDataHelper(currPlayer, playerReceivingPrompt, roundNumber);
       }
     }
   }
