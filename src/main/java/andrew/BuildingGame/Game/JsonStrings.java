@@ -108,4 +108,10 @@ public class JsonStrings {
                 "\"                                                               \\n\",\"bold\":true," +
                 "\"strikethrough\":true}]\n";
     }
+
+    public static String generateFinalBuildingRoundText() {
+        return "[{\"text\":\"\"},{\"text\":\"Fin\",\"bold\":true,\"color\":\"yellow\"}," + 
+                "{\"text\":\"a\",\"bold\":true,\"color\":\"#fefe3e\"},{\"text\":\"l Bu\",\"bold\":true,\"color\":\"yellow\"}," +
+                "{\"text\":\"i\",\"bold\":true,\"color\":\"#fdfd3f\"},{\"text\":\"lding Round! \u270e\",\"bold\":true,\"color\":\"yellow\"}]";  
+    }
 }
