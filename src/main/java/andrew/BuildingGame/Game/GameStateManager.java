@@ -1,11 +1,6 @@
 package andrew.BuildingGame.Game;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
-
-import javax.annotation.Nullable;
-import java.util.HashMap;
 
 public class GameStateManager {
   public enum GameState {
@@ -26,7 +21,7 @@ public class GameStateManager {
     };
   }
 
-  public static String getActionBarMsgForState(GameState currState, @Nullable BuildingPlot bp) {
+  public static String getActionBarMsgForState(GameState currState, BuildingPlot bp) {
     return switch (currState) {
       case INIT -> "";
       case INITPROMPT -> "";

@@ -2,15 +2,12 @@ package andrew.BuildingGame.Game;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.server.v1_16_R3.IChatBaseComponent;
-import net.minecraft.server.v1_16_R3.PacketPlayOutTitle;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.boss.BossBar;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
@@ -18,12 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 public class Util {
-  public static void sendTitleMessage(Player player, String message) {
-    IChatBaseComponent chatTitle = IChatBaseComponent.ChatSerializer.a((String)("{\"text\": \"" + message + "\"}"));
-    PacketPlayOutTitle p = new PacketPlayOutTitle(PacketPlayOutTitle.EnumTitleAction.TITLE, chatTitle);
-    ((CraftPlayer) player).getHandle().playerConnection.sendPacket(p);
-  }
-
   public static void sendActionBarMessage(Player player, String message) {
     TextComponent prompt = new TextComponent(message);
     player.spigot().sendMessage(ChatMessageType.ACTION_BAR, prompt);
